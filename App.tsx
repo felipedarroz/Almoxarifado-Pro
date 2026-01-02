@@ -13,8 +13,9 @@ import { CalendarView } from './components/CalendarView';
 import { generateDeliveryReport } from './services/geminiService';
 import { generateId } from './utils';
 import { supabase } from './services/supabaseClient';
+import { dataService } from './services/dataService';
 
-// Chaves padrão para evitar perda de dados ao atualizar
+// Chaves padrão para evitar perda de dados ao atualizar (LEGACY - Removing usage)
 const STORAGE_KEYS = {
   DELIVERIES: 'almox_deliveries',
   PENDENCIES: 'almox_pendencies',
@@ -57,18 +58,15 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_RECEIVERS;
   });
 
+  /* REMOVING LOCALSTORAGE INIT
   const [deliveries, setDeliveries] = useState<DeliveryItem[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.DELIVERIES);
     return saved ? JSON.parse(saved) : [];
   });
-  const [pendencies, setPendencies] = useState<ProviderPendency[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PENDENCIES);
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [commercialDemands, setCommercialDemands] = useState<CommercialDemand[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.COMMERCIAL);
-    return saved ? JSON.parse(saved) : [];
-  });
+  */
+  const [deliveries, setDeliveries] = useState<DeliveryItem[]>([]);
+  const [pendencies, setPendencies] = useState<ProviderPendency[]>([]);
+  const [commercialDemands, setCommercialDemands] = useState<CommercialDemand[]>([]);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'deliveries' | 'pendencies' | 'commercial' | 'calendar'>('deliveries');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -88,17 +86,33 @@ export default function App() {
   const [showDashboard, setShowDashboard] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
 
-  // Sync effect
+  // REMOVED LocalStorage Sync Effect
+
+  // Load Data Effect
   useEffect(() => {
+    if (currentUser?.company_id) {
+      loadData(currentUser.company_id);
+    }
+  }, [currentUser?.company_id]);
+
+  const loadData = async (companyId: string) => {
     setSaveStatus('saving');
-    localStorage.setItem(STORAGE_KEYS.DELIVERIES, JSON.stringify(deliveries));
-    localStorage.setItem(STORAGE_KEYS.PENDENCIES, JSON.stringify(pendencies));
-    localStorage.setItem(STORAGE_KEYS.COMMERCIAL, JSON.stringify(commercialDemands));
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-    localStorage.setItem(STORAGE_KEYS.RECEIVERS, JSON.stringify(receivers));
-    const timeout = setTimeout(() => setSaveStatus('saved'), 500);
-    return () => clearTimeout(timeout);
-  }, [deliveries, pendencies, commercialDemands, users, receivers]);
+    try {
+      const [del, pen, com] = await Promise.all([
+        dataService.getDeliveries(companyId),
+        dataService.getPendencies(companyId),
+        dataService.getDemands(companyId)
+      ]);
+      setDeliveries(del);
+      setPendencies(pen);
+      setCommercialDemands(com);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      alert("Erro ao carregar dados do servidor.");
+    } finally {
+      setSaveStatus('saved');
+    }
+  };
 
   // Supabase Auth and Profile Effect
   useEffect(() => {
@@ -164,10 +178,7 @@ export default function App() {
   const isAdmin = currentUser?.role === UserRole.ADMIN;
 
   const handleManualSave = () => {
-    localStorage.setItem(STORAGE_KEYS.DELIVERIES, JSON.stringify(deliveries));
-    localStorage.setItem(STORAGE_KEYS.PENDENCIES, JSON.stringify(pendencies));
-    localStorage.setItem(STORAGE_KEYS.COMMERCIAL, JSON.stringify(commercialDemands));
-    alert("Dados sincronizados forçadamente.");
+    if (currentUser?.company_id) loadData(currentUser.company_id);
   };
 
   const handleExportBackup = () => {
@@ -219,10 +230,26 @@ export default function App() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleSave = (item: DeliveryItem) => {
-    setDeliveries(prev => editingItem ? prev.map(d => d.id === item.id ? item : d) : [item, ...prev]);
-    setIsFormOpen(false);
-    setEditingItem(undefined);
+  const handleSave = async (item: DeliveryItem) => {
+    if (!currentUser?.company_id) return;
+    setSaveStatus('saving');
+
+    try {
+      if (editingItem) {
+        await dataService.updateDelivery(item);
+        setDeliveries(prev => prev.map(d => d.id === item.id ? item : d));
+      } else {
+        const newItem = await dataService.createDelivery(item, currentUser.company_id);
+        setDeliveries(prev => [newItem, ...prev]);
+      }
+      setIsFormOpen(false);
+      setEditingItem(undefined);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao salvar entrega.");
+    } finally {
+      setSaveStatus('saved');
+    }
   };
 
   const handleUpdateReceiver = (id: string, newReceiver: string) => {
@@ -249,9 +276,15 @@ export default function App() {
     ));
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Excluir este registro permanentemente?')) {
-      setDeliveries(prev => prev.filter(d => d.id !== id));
+      try {
+        await dataService.deleteDelivery(id);
+        setDeliveries(prev => prev.filter(d => d.id !== id));
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao excluir.");
+      }
     }
   };
 
@@ -317,7 +350,7 @@ export default function App() {
             onCreateUser={(u) => setUsers(prev => [...prev, u])}
             onDeleteUser={(id) => setUsers(prev => prev.filter(u => u.id !== id))}
             receivers={receivers}
-            onAddReceiver={(r) => setReceivers(prev => [...prev, r])}
+            onAddReceiver={(r) => setReceivers(prev => [...prev, r])} // Keep local for now or move to DB later
             onDeleteReceiver={(r) => setReceivers(prev => prev.filter(x => x !== r))}
           />
         ) : (
@@ -497,14 +530,86 @@ export default function App() {
             {activeTab === 'pendencies' && (
               <PendencyPanel
                 pendencies={pendencies}
-                onAddPendency={(p) => setPendencies(prev => [p, ...prev])}
-                onUpdatePendency={(updatedPendency) => setPendencies(prev => prev.map(p => p.id === updatedPendency.id ? updatedPendency : p))}
-                onResolvePendency={(id) => setPendencies(prev => prev.map(p => p.id === id ? { ...p, resolved: true } : p))}
-                onDeletePendency={(id) => setPendencies(prev => prev.filter(p => p.id !== id))}
+                onAddPendency={async (p) => {
+                  if (!currentUser.company_id) return;
+                  try {
+                    const saved = await dataService.createPendency(p, currentUser.company_id);
+                    setPendencies(prev => [saved, ...prev]);
+                  } catch (e) { console.error(e); alert('Erro ao salvar pendência'); }
+                }}
+                onUpdatePendency={async (p) => {
+                  try {
+                    await dataService.updatePendency(p);
+                    setPendencies(prev => prev.map(old => old.id === p.id ? p : old));
+                  } catch (e) { console.error(e); alert('Erro ao atualizar'); }
+                }}
+                onResolvePendency={async (id) => {
+                  const item = pendencies.find(p => p.id === id);
+                  if (item) {
+                    const updated = { ...item, resolved: true };
+                    try {
+                      await dataService.updatePendency(updated);
+                      setPendencies(prev => prev.map(p => p.id === id ? updated : p));
+                    } catch (e) { console.error(e); }
+                  }
+                }}
+                onDeletePendency={async (id) => {
+                  if (confirm('Excluir pendência?')) {
+                    try {
+                      await dataService.deletePendency(id);
+                      setPendencies(prev => prev.filter(p => p.id !== id));
+                    } catch (e) { console.error(e); }
+                  }
+                }}
                 userRole={currentUser.role}
               />
             )}
-            {activeTab === 'commercial' && <CommercialPanel demands={commercialDemands} onAddDemand={(d) => setCommercialDemands(prev => [d, ...prev])} onUpdateDemand={(d) => setCommercialDemands(prev => prev.map(x => x.id === d.id ? d : x))} onCompleteDemand={(id, date) => setCommercialDemands(prev => prev.map(d => d.id === id ? { ...d, status: 'Concluído', completionDate: date } : d))} onUpdateStatus={(id, s) => setCommercialDemands(prev => prev.map(d => d.id === id ? { ...d, status: s } : d))} onDeleteDemand={(id) => setCommercialDemands(prev => prev.filter(d => d.id !== id))} userRole={currentUser.role} systemToday={SYSTEM_TODAY} />}
+            {activeTab === 'commercial' && <CommercialPanel
+              demands={commercialDemands}
+              onAddDemand={async (d) => {
+                if (!currentUser.company_id) return;
+                try {
+                  const saved = await dataService.createDemand(d, currentUser.company_id);
+                  setCommercialDemands(prev => [saved, ...prev]);
+                } catch (e) { console.error(e); alert("Erro ao salvar demanda"); }
+              }}
+              onUpdateDemand={async (d) => {
+                try {
+                  await dataService.updateDemand(d);
+                  setCommercialDemands(prev => prev.map(x => x.id === d.id ? d : x));
+                } catch (e) { console.error(e); }
+              }}
+              onCompleteDemand={async (id, date) => {
+                const item = commercialDemands.find(d => d.id === id);
+                if (item) {
+                  const updated = { ...item, status: 'Concluído' as const, completionDate: date };
+                  try {
+                    await dataService.updateDemand(updated);
+                    setCommercialDemands(prev => prev.map(d => d.id === id ? updated : d));
+                  } catch (e) { console.error(e); }
+                }
+              }}
+              onUpdateStatus={async (id, s) => {
+                const item = commercialDemands.find(d => d.id === id);
+                if (item) {
+                  const updated = { ...item, status: s as any };
+                  try {
+                    await dataService.updateDemand(updated);
+                    setCommercialDemands(prev => prev.map(d => d.id === id ? updated : d));
+                  } catch (e) { console.error(e); }
+                }
+              }}
+              onDeleteDemand={async (id) => {
+                if (confirm('Excluir solicitação comercial?')) {
+                  try {
+                    await dataService.deleteDemand(id);
+                    setCommercialDemands(prev => prev.filter(d => d.id !== id));
+                  } catch (e) { console.error(e); }
+                }
+              }}
+              userRole={currentUser.role}
+              systemToday={SYSTEM_TODAY}
+            />}
 
             {activeTab === 'calendar' && (
               <CalendarView

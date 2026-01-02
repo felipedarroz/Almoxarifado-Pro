@@ -24,6 +24,7 @@ export interface DeliveryItem {
   receiverName?: string; // Nome do Retirante
   observations?: string; // Observações do Almoxarife
   adminStatus: AdminStatus; // Status de Fechamento Administrativo
+  company_id?: string;
 }
 
 export interface ProviderPendency {
@@ -36,6 +37,7 @@ export interface ProviderPendency {
   date: string; // Data do registro
   expectedResolutionDate?: string; // Data prevista para resolução
   resolved: boolean; // Se a pendência foi resolvida
+  company_id?: string;
 }
 
 export enum DemandPriority {
@@ -54,6 +56,7 @@ export interface CommercialDemand {
   items: string; // Lista de peças
   status: 'Pendente' | 'Em Andamento' | 'Concluído';
   priority: DemandPriority;
+  company_id?: string;
 }
 
 export type DeliveryFilter = {
