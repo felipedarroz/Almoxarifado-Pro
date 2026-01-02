@@ -17,6 +17,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [company, setCompany] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +85,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         if (profileError) throw profileError;
 
-        onLoginSuccess();
+        if (profileError) throw profileError;
+
+        setRegistrationSuccess(true);
+        // Do not auto-login
+        // onLoginSuccess();
       } else {
         // Login
         const emailToLogin = username.includes('@')
@@ -143,7 +148,37 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setPassword('');
     setCompany('');
     setConfirmPassword('');
+    setRegistrationSuccess(false);
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 -left-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md p-8 relative z-10 text-center animate-in fade-in zoom-in duration-300">
+          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <UserPlus size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Cadastro em Análise</h2>
+          <p className="text-slate-600 mb-6">
+            Aguardando aprovação do Administrador.
+          </p>
+          <button
+            onClick={toggleMode}
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all"
+          >
+            Voltar para Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 relative overflow-hidden">
