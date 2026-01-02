@@ -115,7 +115,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           // Check Status
           if (profile.status === UserStatus.PENDING) {
             await supabase.auth.signOut();
-            throw new Error('Cadastro em análise. Aguarde aprovação do administrador.');
+            throw new Error('Sua solicitação de acesso está em análise. Por favor, aguarde.');
           }
           if (profile.status === UserStatus.BLOCKED) {
             await supabase.auth.signOut();
