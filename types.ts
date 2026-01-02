@@ -71,6 +71,13 @@ export enum UserRole {
   VIEWER = "Visualizador"
 }
 
+
+export enum UserStatus {
+  PENDING = "pending",
+  ACTIVE = "active",
+  BLOCKED = "blocked"
+}
+
 export interface User {
   id: string;
   username: string;
@@ -78,4 +85,5 @@ export interface User {
   password?: string;
   company?: string;
   company_id?: string;
+  status?: UserStatus | string;
 }

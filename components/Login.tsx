@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 import { Package, Lock, User as UserIcon, Key, ArrowRight, UserPlus, AlertCircle, Building2 } from 'lucide-react';
-import { User, UserRole } from '../types';
+import { User, UserRole, UserStatus } from '../types';
 import { supabase } from '../services/supabaseClient';
 
 interface LoginProps {
@@ -78,7 +78,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             username: username,
             company: normalizedCompany, // Keep literal for display cache if needed
             company_id: companyId,
-            role: UserRole.VIEWER
+            role: UserRole.VIEWER,
+            status: UserStatus.PENDING
           });
 
         if (profileError) throw profileError;
@@ -101,11 +102,21 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         // Fetch profile to check if user belongs to the entered company
         const { data: profile } = await supabase
           .from('profiles')
-          .select('company, company_id, companies(name)') // Join with companies to be sure
+          .select('company, company_id, status, companies(name)') // Join with companies to be sure
           .eq('id', user.id)
           .single();
 
         if (profile) {
+          // Check Status
+          if (profile.status === UserStatus.PENDING) {
+            await supabase.auth.signOut();
+            throw new Error('Cadastro em análise. Aguarde aprovação do administrador.');
+          }
+          if (profile.status === UserStatus.BLOCKED) {
+            await supabase.auth.signOut();
+            throw new Error('Acesso bloqueado. Contate o suporte.');
+          }
+
           // Strict check: The entered company name must match the stored company name (or relation)
           // Using case-insensitive check for better UX
           const storedCompany = profile.company || (profile.companies as any)?.name;
