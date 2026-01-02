@@ -324,6 +324,10 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="text-right mr-3 hidden sm:block border-r border-slate-700 pr-4">
+              <div className="text-xs text-slate-300 font-medium">{currentUser.username}</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">{currentUser.company || '...'}</div>
+            </div>
             {isAdmin && (
               <div className="flex gap-1 border-r border-slate-700 pr-2 mr-2">
                 <button onClick={handleExportBackup} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"><Download size={18} /></button>
