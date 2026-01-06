@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange } from 'lucide-react';
+import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority } from './types';
 import { StatusBadge } from './components/StatusBadge';
 import { DeliveryForm } from './components/DeliveryForm';
@@ -14,6 +14,7 @@ import { generateDeliveryReport } from './services/geminiService';
 import { generateId } from './utils';
 import { supabase } from './services/supabaseClient';
 import { dataService } from './services/dataService';
+import { ReportsModal } from './components/ReportsModal';
 
 // Chaves padrão para evitar perda de dados ao atualizar (LEGACY - Removing usage)
 const STORAGE_KEYS = {
@@ -85,6 +86,7 @@ export default function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showDashboard, setShowDashboard] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
+  const [showReportsModal, setShowReportsModal] = useState(false);
 
   // REMOVED LocalStorage Sync Effect
 
@@ -378,6 +380,18 @@ export default function App() {
                 </label>
               </div>
             )}
+
+            {/* Reports Button */}
+            {(currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.MANAGER) && (
+              <button
+                onClick={() => setShowReportsModal(true)}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors mr-2"
+              >
+                <FileText size={16} />
+                Relatórios
+              </button>
+            )}
+
             {isAdmin && <button onClick={() => setShowAdminPanel(!showAdminPanel)} className={`p-2 rounded-lg transition-colors ${showAdminPanel ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`} title="Painel Administrativo"><LayoutDashboard size={20} /></button>}
             {!showAdminPanel && currentUser.role !== UserRole.VIEWER && (
               <button onClick={() => { setEditingItem(undefined); setIsFormOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg shadow-sm transition-colors"><Plus size={20} /></button>
@@ -693,6 +707,12 @@ export default function App() {
       </main>
 
       {isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers} systemToday={SYSTEM_TODAY} />}
+
+      <ReportsModal
+        isOpen={showReportsModal}
+        onClose={() => setShowReportsModal(false)}
+        companyId={currentUser.company_id || ''}
+      />
     </div>
   );
 }

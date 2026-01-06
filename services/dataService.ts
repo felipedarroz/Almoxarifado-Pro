@@ -55,6 +55,19 @@ export const dataService = {
         return (data || []).map(mapDeliveryToApp);
     },
 
+    async getDeliveriesByDateRange(companyId: string, startDate: string, endDate: string) {
+        const { data, error } = await supabase
+            .from('deliveries')
+            .select('*')
+            .eq('company_id', companyId)
+            .gte('issue_date', startDate)
+            .lte('issue_date', endDate)
+            .order('issue_date', { ascending: true });
+
+        if (error) throw error;
+        return (data || []).map(mapDeliveryToApp);
+    },
+
     async createDelivery(item: Omit<DeliveryItem, 'id'>, companyId: string) {
         const payload = {
             invoice_number: item.invoiceNumber,
@@ -170,6 +183,19 @@ export const dataService = {
             .select('*')
             .eq('company_id', companyId)
             .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return (data || []).map(mapDemandToApp);
+    },
+
+    async getDemandsByDateRange(companyId: string, startDate: string, endDate: string) {
+        const { data, error } = await supabase
+            .from('commercial_demands')
+            .select('*')
+            .eq('company_id', companyId)
+            .gte('request_date', startDate)
+            .lte('request_date', endDate)
+            .order('request_date', { ascending: true });
 
         if (error) throw error;
         return (data || []).map(mapDemandToApp);
