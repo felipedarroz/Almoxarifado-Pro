@@ -350,7 +350,22 @@ export default function App() {
           <AdminPanel
             users={users}
             onUpdateUserRole={(id, role) => setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u))}
-            onImportData={(items) => { setDeliveries(prev => [...items, ...prev]); setShowAdminPanel(false); }}
+            onImportData={async (items) => {
+              if (!currentUser?.company_id) return;
+              setSaveStatus('saving');
+              try {
+                const promises = items.map(item => dataService.createDelivery(item, currentUser.company_id!));
+                const savedItems = await Promise.all(promises);
+                setDeliveries(prev => [...savedItems, ...prev]);
+                alert(`${savedItems.length} registros importados e salvos com sucesso!`);
+              } catch (error) {
+                console.error("Erro ao importar:", error);
+                alert("Erro ao salvar dados importados.");
+              } finally {
+                setSaveStatus('saved');
+                setShowAdminPanel(false);
+              }
+            }}
             onCreateUser={(u) => setUsers(prev => [...prev, u])}
             onDeleteUser={(id) => setUsers(prev => prev.filter(u => u.id !== id))}
             receivers={receivers}
