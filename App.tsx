@@ -252,28 +252,64 @@ export default function App() {
     }
   };
 
-  const handleUpdateReceiver = (id: string, newReceiver: string) => {
-    setDeliveries(prev => prev.map(item =>
-      item.id === id ? { ...item, receiverName: newReceiver } : item
-    ));
+  const handleUpdateReceiver = async (id: string, newReceiver: string) => {
+    const item = deliveries.find(d => d.id === id);
+    if (!item) return;
+    const updated = { ...item, receiverName: newReceiver };
+
+    setDeliveries(prev => prev.map(d => d.id === id ? updated : d));
+    try {
+      await dataService.updateDelivery(updated);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar técnico.');
+      setDeliveries(prev => prev.map(d => d.id === id ? item : d));
+    }
   };
 
-  const handleUpdateStatus = (id: string, newStatus: DeliveryStatus) => {
-    setDeliveries(prev => prev.map(item =>
-      item.id === id ? { ...item, status: newStatus } : item
-    ));
+  const handleUpdateStatus = async (id: string, newStatus: DeliveryStatus) => {
+    const item = deliveries.find(d => d.id === id);
+    if (!item) return;
+    const updated = { ...item, status: newStatus };
+
+    setDeliveries(prev => prev.map(d => d.id === id ? updated : d));
+    try {
+      await dataService.updateDelivery(updated);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar status.');
+      setDeliveries(prev => prev.map(d => d.id === id ? item : d));
+    }
   };
 
-  const handleUpdateDeliveryDate = (id: string, newDate: string) => {
-    setDeliveries(prev => prev.map(item =>
-      item.id === id ? { ...item, deliveryDate: newDate } : item
-    ));
+  const handleUpdateDeliveryDate = async (id: string, newDate: string) => {
+    const item = deliveries.find(d => d.id === id);
+    if (!item) return;
+    const updated = { ...item, deliveryDate: newDate };
+
+    setDeliveries(prev => prev.map(d => d.id === id ? updated : d));
+    try {
+      await dataService.updateDelivery(updated);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar data.');
+      setDeliveries(prev => prev.map(d => d.id === id ? item : d));
+    }
   };
 
-  const handleUpdateAdminStatus = (id: string, newStatus: AdminStatus) => {
-    setDeliveries(prev => prev.map(item =>
-      item.id === id ? { ...item, adminStatus: newStatus } : item
-    ));
+  const handleUpdateAdminStatus = async (id: string, newStatus: AdminStatus) => {
+    const item = deliveries.find(d => d.id === id);
+    if (!item) return;
+    const updated = { ...item, adminStatus: newStatus };
+
+    setDeliveries(prev => prev.map(d => d.id === id ? updated : d));
+    try {
+      await dataService.updateDelivery(updated);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar status admin.');
+      setDeliveries(prev => prev.map(d => d.id === id ? item : d));
+    }
   };
 
   const handleDelete = async (id: string) => {
