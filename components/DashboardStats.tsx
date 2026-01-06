@@ -141,25 +141,25 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-2">
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><FileText size={20} /></div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total</span>
+              <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Total</span>
             </div>
             <div>
               <p className="text-3xl font-bold text-slate-800">{stats.total}</p>
-              <p className="text-xs text-slate-500 font-medium">Notas Emitidas</p>
+              <p className="text-sm text-slate-500 font-medium">Notas Emitidas</p>
             </div>
           </div>
 
           {/* Tempo Médio */}
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col justify-between">
             <div className="flex items-start justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tempo Médio</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tempo Médio</span>
               <Clock size={16} className="text-slate-300" />
             </div>
             <div>
               <span className="text-3xl font-bold text-slate-700">{stats.avgTime}</span>
-              <span className="text-xs text-slate-400 ml-1">dias</span>
+              <span className="text-sm text-slate-400 ml-1">dias</span>
             </div>
-            <div className="text-[10px] text-slate-400 mt-1">Da emissão à entrega</div>
+            <div className="text-xs text-slate-400 mt-1">Da emissão à entrega</div>
           </div>
 
           {/* Critical Delay - EDITÁVEL */}
@@ -167,7 +167,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
             <div className="flex justify-between items-start mb-1">
               <div className="w-full">
                 <div className="flex justify-between items-center w-full">
-                  <p className="text-xs font-bold text-red-600 uppercase tracking-wide">Atraso Crítico</p>
+                  <p className="text-sm font-bold text-red-600 uppercase tracking-wide">Atraso Crítico</p>
                   <button
                     onClick={() => {
                       setTempThreshold(criticalThreshold);
@@ -180,14 +180,14 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
                   </button>
                 </div>
 
-                <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1 h-6">
+                <div className="text-xs text-slate-500 mt-1 flex items-center gap-1 h-6">
                   <span>Pendente &gt;</span>
                   {isEditingThreshold ? (
                     <div className="flex items-center gap-1 bg-white shadow-lg p-1 rounded border border-slate-200 absolute right-2 top-8 z-10">
                       <input
                         type="number"
                         min="1"
-                        className="w-12 px-1 py-0.5 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-500 bg-red-50 text-red-900 font-bold text-center"
+                        className="w-12 px-1 py-0.5 text-sm border border-red-300 rounded focus:ring-1 focus:ring-red-500 bg-red-50 text-red-900 font-bold text-center"
                         value={tempThreshold}
                         onChange={(e) => setTempThreshold(parseInt(e.target.value))}
                         autoFocus
@@ -209,7 +209,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
             <div className="mt-1 flex items-center justify-between">
               <div>
                 <span className="text-3xl font-bold text-slate-800">{stats.stagnantCount}</span>
-                <span className="text-xs text-slate-500 ml-1">notas</span>
+                <span className="text-sm text-slate-500 ml-1">notas</span>
               </div>
               <AlertOctagon size={20} className="text-red-500 opacity-20" />
             </div>
@@ -221,13 +221,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           {/* Awaiting Attendance */}
           <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide">Aguardando Atend.</span>
+              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Aguardando Atend.</span>
               <CheckCircle2 size={14} className="text-emerald-200 group-hover:text-emerald-500 transition-colors" />
             </div>
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-bold text-slate-700">{stats.awaitingAttendance}</span>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{stats.awaitingPct}%</span>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{stats.awaitingPct}%</span>
               </div>
               <ProgressBar pct={stats.awaitingPct} colorClass="bg-emerald-500" />
             </div>
@@ -236,13 +236,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           {/* Full Returns */}
           <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-orange-700 uppercase tracking-wide">Dev. Totais</span>
+              <span className="text-xs font-bold text-orange-700 uppercase tracking-wide">Dev. Totais</span>
               <XCircle size={14} className="text-orange-200 group-hover:text-orange-500 transition-colors" />
             </div>
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-bold text-slate-700">{stats.fullReturns}</span>
-                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">{stats.fullReturnPct}%</span>
+                <span className="text-xs font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">{stats.fullReturnPct}%</span>
               </div>
               <ProgressBar pct={stats.fullReturnPct} colorClass="bg-orange-500" />
             </div>
@@ -252,13 +252,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           {/* Partial Returns */}
           <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-yellow-700 uppercase tracking-wide">Dev. Parciais</span>
+              <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Dev. Parciais</span>
               <AlertTriangle size={14} className="text-yellow-200 group-hover:text-yellow-500 transition-colors" />
             </div>
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-bold text-slate-700">{stats.partialReturns}</span>
-                <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded">{stats.partialReturnPct}%</span>
+                <span className="text-xs font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded">{stats.partialReturnPct}%</span>
               </div>
               <ProgressBar pct={stats.partialReturnPct} colorClass="bg-yellow-500" />
             </div>
@@ -267,13 +267,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           {/* Not Retrieved */}
           <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-red-700 uppercase tracking-wide">Não Retirado</span>
+              <span className="text-xs font-bold text-red-700 uppercase tracking-wide">Não Retirado</span>
               <XCircle size={14} className="text-red-200 group-hover:text-red-500 transition-colors" />
             </div>
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-bold text-slate-700">{stats.notRetrievedCount}</span>
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">{stats.notRetrievedPct}%</span>
+                <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">{stats.notRetrievedPct}%</span>
               </div>
               <ProgressBar pct={stats.notRetrievedPct} colorClass="bg-red-500" />
             </div>
@@ -297,19 +297,19 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           <div className="grid grid-cols-2 gap-4 h-full">
             {/* Card Ativas */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-              <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Itens Pendentes</p>
+              <p className="text-xs text-slate-400 font-bold uppercase mb-1">Itens Pendentes</p>
               <p className="text-3xl font-bold text-orange-600">{stats.activePendencies}</p>
-              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Aguardando regularização</p>
+              <p className="text-xs text-slate-400 mt-1 leading-tight">Aguardando regularização</p>
             </div>
 
             {/* Card Resolução */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-              <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Taxa de Resolução</p>
+              <p className="text-xs text-slate-400 font-bold uppercase mb-1">Taxa de Resolução</p>
               <div className="flex items-end gap-2 mb-1">
                 <p className="text-3xl font-bold text-slate-700">{stats.pendencyResolutionPct}%</p>
               </div>
               <ProgressBar pct={stats.pendencyResolutionPct} colorClass="bg-green-500" />
-              <p className="text-[10px] text-slate-400 mt-2">{stats.resolvedPendencies} de {stats.totalPendencies} ok</p>
+              <p className="text-xs text-slate-400 mt-2">{stats.resolvedPendencies} de {stats.totalPendencies} ok</p>
             </div>
           </div>
         </section>
@@ -330,8 +330,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
 
             <div className="flex justify-between items-start mb-4">
               <div>
-                <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">Atendimento no Prazo</p>
-                <p className="text-[10px] text-slate-500">Obras com materiais entregues vs prazo</p>
+                <p className="text-sm font-bold text-purple-700 uppercase tracking-wide">Atendimento no Prazo</p>
+                <p className="text-xs text-slate-500">Obras com materiais entregues vs prazo</p>
               </div>
               <Target className="text-purple-500" size={20} />
             </div>
