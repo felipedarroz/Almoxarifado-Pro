@@ -222,13 +222,11 @@ export const dataService = {
     },
 
     // Users (Profiles)
-    async getUsers() {
-        // Select all profiles. You might want to filter by company_id if needed,
-        // but for now we fetch all to let Admin see them (RLS usually handles visibility).
-        // Since we are fixing the Admin Panel, we assume the user is valid.
+    async getUsers(companyId: string) {
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
+            .eq('company_id', companyId)
             .order('username', { ascending: true });
 
         if (error) throw error;

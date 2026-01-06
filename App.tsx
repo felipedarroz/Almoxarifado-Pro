@@ -109,7 +109,7 @@ export default function App() {
 
       // If admin, fetch users too
       if (currentUser?.role === UserRole.ADMIN) {
-        dataService.getUsers().then(u => setUsers(u)).catch(err => console.error("Erro ao carregar usuários:", err));
+        dataService.getUsers(companyId).then(u => setUsers(u)).catch(err => console.error("Erro ao carregar usuários:", err));
       }
 
     } catch (error) {
