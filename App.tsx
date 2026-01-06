@@ -106,6 +106,12 @@ export default function App() {
       setDeliveries(del);
       setPendencies(pen);
       setCommercialDemands(com);
+
+      // If admin, fetch users too
+      if (currentUser?.role === UserRole.ADMIN) {
+        dataService.getUsers().then(u => setUsers(u)).catch(err => console.error("Erro ao carregar usuários:", err));
+      }
+
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       alert("Erro ao carregar dados do servidor.");
@@ -385,7 +391,16 @@ export default function App() {
         {showAdminPanel ? (
           <AdminPanel
             users={users}
-            onUpdateUserRole={(id, role) => setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u))}
+            onUpdateUserRole={async (id, role) => {
+              try {
+                await dataService.updateUserRole(id, role);
+                setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u));
+                alert('Função atualizada com sucesso!');
+              } catch (e) {
+                console.error(e);
+                alert('Erro ao atualizar função do usuário.');
+              }
+            }}
             onImportData={async (items) => {
               if (!currentUser?.company_id) return;
               setSaveStatus('saving');
@@ -402,8 +417,8 @@ export default function App() {
                 setShowAdminPanel(false);
               }
             }}
-            onCreateUser={(u) => setUsers(prev => [...prev, u])}
-            onDeleteUser={(id) => setUsers(prev => prev.filter(u => u.id !== id))}
+            onCreateUser={(u) => { alert('Criação de usuários desabilitada. Utilize o painel externo.'); }}
+            onDeleteUser={(id) => { alert('Remoção de usuários desabilitada. Utilize o painel externo.'); }}
             receivers={receivers}
             onAddReceiver={(r) => setReceivers(prev => [...prev, r])} // Keep local for now or move to DB later
             onDeleteReceiver={(r) => setReceivers(prev => prev.filter(x => x !== r))}

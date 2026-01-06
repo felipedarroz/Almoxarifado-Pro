@@ -10,6 +10,7 @@ interface AdminPanelProps {
   users: User[];
   onUpdateUserRole: (userId: string, newRole: UserRole) => void;
   onImportData: (items: DeliveryItem[]) => void;
+  // onCreateUser is deprecated/disabled
   onCreateUser: (user: User) => void;
   onDeleteUser: (userId: string) => void;
   receivers?: string[];
@@ -202,46 +203,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {activeTab === 'users' && (
           <div className="space-y-8">
-            <form onSubmit={handleCreateUser} className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <Plus size={16} /> Adicionar Novo Usuário
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+              <h3 className="text-sm font-semibold text-blue-800 mb-1 flex items-center gap-2">
+                <UserCog size={16} /> Gerenciamento de Acesso
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input type="text" placeholder="Nome de Usuário" className="px-3 py-2 border border-slate-300 rounded text-sm bg-white text-slate-900" value={newUser.username} onChange={e => setNewUser({ ...newUser, username: e.target.value })} required />
-                <input type="password" placeholder="Senha" className="px-3 py-2 border border-slate-300 rounded text-sm bg-white text-slate-900" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} required />
-                <select className="px-3 py-2 border border-slate-300 rounded text-sm bg-white text-slate-900" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as UserRole })}>
-                  {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
-                </select>
-                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors">Criar</button>
-              </div>
-            </form>
+              <p className="text-xs text-blue-600">
+                Os usuários são criados e autenticados externamente (Firebase/Supabase).
+                Utilize esta lista apenas para gerenciar as permissões (Funções) de acesso ao sistema.
+              </p>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-600">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-4 py-2 font-medium text-slate-800">Usuário</th>
-                    <th className="px-4 py-2 font-medium text-slate-800">Senha</th>
-                    <th className="px-4 py-2 font-medium text-slate-800">Permissão</th>
-                    <th className="px-4 py-2 font-medium text-slate-800 text-right">Ação</th>
+                    <th className="px-4 py-2 font-medium text-slate-800">Usuário / Email</th>
+                    <th className="px-4 py-2 font-medium text-slate-800">Função</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {users.map(user => (
                     <tr key={user.id}>
-                      <td className="px-4 py-3 font-medium text-slate-900">{user.username}</td>
-                      <td className="px-4 py-3 flex items-center gap-1 text-xs text-slate-400"><Key size={12} /> ••••••</td>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {user.username}
+                        {user.company && <div className="text-[10px] text-slate-400">{user.company}</div>}
+                      </td>
                       <td className="px-4 py-3">
-                        <select value={user.role} onChange={(e) => onUpdateUserRole(user.id, e.target.value as UserRole)} className="bg-white border border-slate-300 text-slate-700 text-xs rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none" disabled={user.username === 'admin'}>
+                        <select
+                          value={user.role}
+                          onChange={(e) => onUpdateUserRole(user.id, e.target.value as UserRole)}
+                          className="bg-white border border-slate-300 text-slate-700 text-xs rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:border-blue-400 transition-colors"
+                        >
                           {Object.values(UserRole).map(role => (<option key={role} value={role}>{role}</option>))}
                         </select>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        {user.username !== 'admin' && (
-                          <button onClick={() => onDeleteUser(user.id)} className="text-red-500 hover:text-red-700 p-1"><Trash2 size={16} /></button>
-                        )}
-                      </td>
                     </tr>
                   ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={2} className="px-4 py-8 text-center text-slate-400 italic">Nenhum usuário encontrado.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
