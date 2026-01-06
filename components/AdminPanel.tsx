@@ -162,7 +162,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         >
           <div className="flex items-center justify-center gap-2">
             <Settings size={16} />
-            Opções Retirantes
+            Opções Técnicos
           </div>
         </button>
       </div>
@@ -254,12 +254,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="space-y-8">
             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
               <h3 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <Truck size={16} className="text-blue-600" /> Gerenciar Lista de Retirantes
+                <Truck size={16} className="text-blue-600" /> Gerenciar Lista de Técnicos
               </h3>
               <form onSubmit={handleAddReceiverSubmit} className="flex gap-2 mb-4">
                 <input
                   type="text"
-                  placeholder="Novo Retirante (Ex: VICENTE)"
+                  placeholder="Novo Técnico (Ex: VICENTE)"
                   className="flex-1 px-3 py-2 border border-slate-300 rounded text-sm bg-white text-slate-900"
                   value={newReceiver}
                   onChange={e => setNewReceiver(e.target.value.toUpperCase())}
