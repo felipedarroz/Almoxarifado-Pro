@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { DeliveryItem, DeliveryStatus, AdminStatus, UserRole } from '../types';
 import { X, Save, Lock } from 'lucide-react';
-import { generateId } from '../utils';
+import { generateId, parseDate } from '../utils';
 
 interface DeliveryFormProps {
   initialData?: DeliveryItem;
@@ -18,7 +18,7 @@ export const DeliveryForm: React.FC<DeliveryFormProps> = ({ initialData, onSave,
     id: '', // Será setado no mount se for novo
     invoiceNumber: '',
     issueDate: systemToday,
-    deliveryDate: '', 
+    deliveryDate: '',
     returnDate: '',
     status: DeliveryStatus.PENDING,
     adminStatus: AdminStatus.OPEN,
@@ -30,26 +30,33 @@ export const DeliveryForm: React.FC<DeliveryFormProps> = ({ initialData, onSave,
 
   useEffect(() => {
     if (initialData) {
+      // Normaliza datas para YYYY-MM-DD para garantir que os inputs type="date" funcionem
+      const normalize = (dateStr?: string) => {
+        const d = parseDate(dateStr);
+        return d ? d.toISOString().split('T')[0] : '';
+      };
+
       setFormData({
         ...initialData,
-        deliveryDate: initialData.deliveryDate || '',
-        returnDate: initialData.returnDate || '',
+        issueDate: normalize(initialData.issueDate) || systemToday,
+        deliveryDate: normalize(initialData.deliveryDate),
+        returnDate: normalize(initialData.returnDate),
         observations: initialData.observations || ''
       });
     } else {
       setFormData(prev => ({ ...prev, id: generateId() }));
     }
-  }, [initialData]);
+  }, [initialData, systemToday]);
 
   const isReceiverRequired = formData.status === DeliveryStatus.DELIVERED;
-  
+
   // CORREÇÃO: Bloqueia NF e Data APENAS se estiver editando um item existente (preserva histórico).
   // Se for um novo cadastro, o Editor DEVE conseguir preencher.
   const isBaseInfoDisabled = !!initialData;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validação do campo retirante é opcional aqui agora, pois pode ser editado na grid,
     // mas mantemos a regra se o usuário tentar salvar como 'Entregue' via formulário sem nome.
     if (isReceiverRequired && (!formData.receiverName || formData.receiverName.trim() === '')) {
@@ -89,11 +96,10 @@ export const DeliveryForm: React.FC<DeliveryFormProps> = ({ initialData, onSave,
                 type="text"
                 required
                 disabled={isBaseInfoDisabled}
-                className={`w-full px-3 py-2 border rounded-lg transition-colors ${
-                    isBaseInfoDisabled 
-                    ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' 
-                    : 'bg-white text-slate-900 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg transition-colors ${isBaseInfoDisabled
+                  ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
+                  : 'bg-white text-slate-900 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
                 value={formData.invoiceNumber}
                 onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
                 placeholder="Ex: 12345"
@@ -108,11 +114,10 @@ export const DeliveryForm: React.FC<DeliveryFormProps> = ({ initialData, onSave,
                 type="date"
                 required
                 disabled={isBaseInfoDisabled}
-                className={`w-full px-3 py-2 border rounded-lg transition-colors ${
-                    isBaseInfoDisabled 
-                    ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' 
-                    : 'bg-white text-slate-900 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg transition-colors ${isBaseInfoDisabled
+                  ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
+                  : 'bg-white text-slate-900 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
                 value={formData.issueDate}
                 onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
               />
@@ -128,7 +133,7 @@ export const DeliveryForm: React.FC<DeliveryFormProps> = ({ initialData, onSave,
                 onChange={(e) => {
                   const newStatus = e.target.value as DeliveryStatus;
                   setFormData(prev => ({
-                    ...prev, 
+                    ...prev,
                     status: newStatus,
                     // Se mudar para Não Retirado, limpamos o nome, senão mantemos o que estava
                     receiverName: newStatus === DeliveryStatus.NOT_RETRIEVED ? '' : prev.receiverName
@@ -141,53 +146,52 @@ export const DeliveryForm: React.FC<DeliveryFormProps> = ({ initialData, onSave,
                 ))}
               </select>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Data de Entrega</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-900"
-                    value={formData.deliveryDate || ''}
-                    onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Data de Devolução</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-900"
-                    value={formData.returnDate || ''}
-                    onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Data de Entrega</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-900"
+                  value={formData.deliveryDate || ''}
+                  onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Data de Devolução</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-slate-900"
+                  value={formData.returnDate || ''}
+                  onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Técnico
-                </label>
-                <select
-                  required={isReceiverRequired}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    isReceiverRequired && !formData.receiverName 
-                      ? 'border-red-300 focus:border-red-500 bg-red-50 text-red-900' 
-                      : 'border-slate-300 focus:border-blue-500 bg-white text-slate-900'
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Técnico
+              </label>
+              <select
+                required={isReceiverRequired}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors ${isReceiverRequired && !formData.receiverName
+                  ? 'border-red-300 focus:border-red-500 bg-red-50 text-red-900'
+                  : 'border-slate-300 focus:border-blue-500 bg-white text-slate-900'
                   }`}
-                  value={formData.receiverName || ''}
-                  onChange={(e) => setFormData({ ...formData, receiverName: e.target.value })}
-                >
-                  <option value="">Selecione o Técnico</option>
-                  {receivers.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                  {!receivers.includes(formData.receiverName || '') && formData.receiverName && (
-                    <option value={formData.receiverName}>{formData.receiverName}</option>
-                  )}
-                </select>
+                value={formData.receiverName || ''}
+                onChange={(e) => setFormData({ ...formData, receiverName: e.target.value })}
+              >
+                <option value="">Selecione o Técnico</option>
+                {receivers.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+                {!receivers.includes(formData.receiverName || '') && formData.receiverName && (
+                  <option value={formData.receiverName}>{formData.receiverName}</option>
+                )}
+              </select>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Observações (Almoxarife)</label>
             <textarea

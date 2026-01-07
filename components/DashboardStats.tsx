@@ -2,6 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { DeliveryItem, DeliveryStatus, CommercialDemand, ProviderPendency } from '../types';
 import { Clock, CheckCircle2, AlertTriangle, XCircle, FileText, AlertOctagon, Target, Briefcase, Package, ClipboardList, Settings2, Save } from 'lucide-react';
+import { parseDate, getDaysDiff } from '../utils';
 
 interface DashboardStatsProps {
   items: DeliveryItem[];
@@ -46,19 +47,22 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
     let stagnantCount = 0;
 
     items.forEach(item => {
-      if (item.deliveryDate && item.issueDate) {
-        const start = new Date(item.issueDate + 'T00:00:00');
-        const end = new Date(item.deliveryDate + 'T00:00:00');
-        const diffTime = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const issueDate = parseDate(item.issueDate);
+      const deliveryDate = parseDate(item.deliveryDate);
+
+      // Cálculo de Tempo Médio (Emissão -> Entrega)
+      if (issueDate && deliveryDate) {
+        // Se a entrega foi antes da emissão por erro de cadastro, ignoramos ou tratamos com abs (getDaysDiff usa abs)
+        const diffDays = getDaysDiff(issueDate, deliveryDate);
         totalDays += diffDays;
         countWithDelivery++;
       }
 
-      if (item.status === DeliveryStatus.PENDING && item.issueDate) {
-        const issueDate = new Date(item.issueDate + 'T00:00:00');
-        const diffTime = today.getTime() - issueDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      // Cálculo de Estagnação (Pendente há X dias)
+      if (item.status === DeliveryStatus.PENDING && issueDate) {
+        // Diferença entre Hoje e Emissão
+        const diffDays = Math.floor((today.getTime() - issueDate.getTime()) / (1000 * 60 * 60 * 24));
+
         // Usa o limite configurável
         if (diffDays > criticalThreshold) stagnantCount++;
       }

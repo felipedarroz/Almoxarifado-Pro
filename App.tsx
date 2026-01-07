@@ -12,7 +12,7 @@ import { PendencyPanel } from './components/PendencyPanel';
 import { CommercialPanel } from './components/CommercialPanel';
 import { CalendarView } from './components/CalendarView';
 import { generateDeliveryReport } from './services/geminiService';
-import { generateId } from './utils';
+import { generateId, formatDate } from './utils';
 import { supabase } from './services/supabaseClient';
 import { dataService } from './services/dataService';
 import { ReportsModal } from './components/ReportsModal';
@@ -534,7 +534,7 @@ export default function App() {
                           return (
                             <tr key={item.id} className="hover:bg-slate-50">
                               <td className="px-4 py-3 font-bold text-slate-900">{item.invoiceNumber}</td>
-                              <td className="px-4 py-3 text-slate-500">{new Date(item.issueDate + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+                              <td className="px-4 py-3 text-slate-500">{formatDate(item.issueDate)}</td>
                               <td className="px-4 py-3">
                                 <select
                                   disabled={isLocked}

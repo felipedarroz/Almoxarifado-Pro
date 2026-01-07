@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CommercialDemand, DemandPriority, UserRole } from '../types';
 import { Plus, Search, Calendar, Briefcase, Trash2, CheckCircle2, Clock, X, Save, CheckSquare, Pencil, AlertCircle, Check, Square } from 'lucide-react';
+import { formatDate } from '../utils';
 
 interface CommercialPanelProps {
     demands: CommercialDemand[];
@@ -179,11 +180,11 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
                 <div className="mb-3">
                     <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
                         <Clock size={12} />
-                        <span>Prazo: <strong>{new Date(item.deadline + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></span>
+                        <span>Prazo: <strong>{formatDate(item.deadline)}</strong></span>
                     </div>
                     {item.completionDate && (
                         <div className="flex items-center gap-1.5 text-[10px] text-green-600 font-bold">
-                            <CheckSquare size={10} /> Disponível: {new Date(item.completionDate + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            <CheckSquare size={10} /> Disponível: {formatDate(item.completionDate)}
                         </div>
                     )}
 
