@@ -3,17 +3,18 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
-import { DeliveryItem, DeliveryStatus } from '../types';
+import { DeliveryItem, DeliveryStatus, CommercialDemand } from '../types';
 import { parseDate } from '../utils';
-import { TrendingUp, Users, PieChart as PieIcon, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Users, PieChart as PieIcon, AlertTriangle, Target } from 'lucide-react';
 
 interface AnalyticsViewProps {
     deliveries: DeliveryItem[];
+    commercialDemands: CommercialDemand[]; // Adicionado
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries }) => {
+export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries, commercialDemands = [] }) => {
 
     // 1. Processar dados para Gráfico de Tendência (Emitidas vs Entregues no Mesmo Dia)
     const trendData = useMemo(() => {
@@ -57,19 +58,32 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries }) => {
             .slice(-30); // Últimos 30 dias com movimento
     }, [deliveries]);
 
-    // 2. Processar dados para Ranking de Técnicos
-    const techData = useMemo(() => {
-        const grouped: Record<string, number> = {};
-        deliveries.forEach(d => {
-            if (d.receiverName) {
-                grouped[d.receiverName] = (grouped[d.receiverName] || 0) + 1;
+    // 2. Processar SLA Comercial (Aderência ao Prazo)
+    const slaData = useMemo(() => {
+        const completed = commercialDemands.filter(d => d.status === 'Concluído' && d.completionDate);
+        if (completed.length === 0) return { percent: 0, onTime: 0, total: 0 };
+
+        let onTimeCount = 0;
+        completed.forEach(d => {
+            if (!d.completionDate) return;
+            const deadline = parseDate(d.deadline);
+            const completion = parseDate(d.completionDate);
+
+            // Considera entregue no prazo se completion <= deadline
+            if (deadline && completion && completion <= deadline) {
+                onTimeCount++;
             }
         });
-        return Object.entries(grouped)
-            .map(([name, count]) => ({ name, entregas: count }))
-            .sort((a, b) => b.entregas - a.entregas)
-            .slice(0, 5); // Top 5
-    }, [deliveries]);
+
+        const percent = Math.round((onTimeCount / completed.length) * 100);
+        return { percent, onTime: onTimeCount, total: completed.length };
+    }, [commercialDemands]);
+
+    // Dados para o Gauge Chart (Pizza adaptada)
+    const gaugeData = [
+        { name: 'No Prazo', value: slaData.percent },
+        { name: 'Fora do Prazo', value: 100 - slaData.percent }
+    ];
 
     // 3. Processar Status (Pizza)
     const statusData = useMemo(() => {
@@ -124,21 +138,40 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries }) => {
                     </div>
                 </div>
 
-                {/* GRÁFICO 2: TOP TÉCNICOS */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                        <Users size={16} /> Top 5 Técnicos (Volumetria)
+                {/* GRÁFICO 2: SLA COMERCIAL (GAUGE) */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center relative">
+                    <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 w-full mb-2">
+                        <Target size={16} className="text-purple-600" /> Aderência ao Prazo (Commercial SLA)
                     </h3>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[250px] w-full relative">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={techData} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
-                                <Tooltip cursor={{ fill: 'transparent' }} />
-                                <Bar dataKey="entregas" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
+                            <PieChart>
+                                <Pie
+                                    data={gaugeData}
+                                    cx="50%"
+                                    cy="70%"
+                                    startAngle={180}
+                                    endAngle={0}
+                                    innerRadius={70}
+                                    outerRadius={100}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    <Cell fill={slaData.percent >= 80 ? '#22c55e' : slaData.percent >= 50 ? '#f59e0b' : '#ef4444'} />
+                                    <Cell fill="#e2e8f0" />
+                                </Pie>
+                            </PieChart>
                         </ResponsiveContainer>
+                        {/* Texto Centralizado */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pt-20 pointer-events-none">
+                            <span className="text-4xl font-black text-slate-800">{slaData.percent}%</span>
+                            <span className="text-xs text-slate-400 font-medium uppercase tracking-wide mt-1">NO PRAZO</span>
+                        </div>
+                    </div>
+                    <div className="text-center text-xs text-slate-500 mt-[-20px]">
+                        Baseado em {slaData.total} obras concluídas.<br />
+                        ({slaData.onTime} entregues no prazo)
                     </div>
                 </div>
 
