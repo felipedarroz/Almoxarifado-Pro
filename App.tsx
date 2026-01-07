@@ -484,7 +484,7 @@ export default function App() {
             )}
 
             {isAdmin && activeTab === 'analytics' && (
-              <AnalyticsView deliveries={deliveries} />
+              <AnalyticsView deliveries={deliveries} commercialDemands={commercialDemands} />
             )}
 
             {activeTab === 'deliveries' && (
