@@ -1,8 +1,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText } from 'lucide-react';
+import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority } from './types';
 import { StatusBadge } from './components/StatusBadge';
+import { AnalyticsView } from './components/AnalyticsView';
 import { DeliveryForm } from './components/DeliveryForm';
 import { Login } from './components/Login';
 import { AdminPanel } from './components/AdminPanel';
@@ -69,7 +70,7 @@ export default function App() {
   const [pendencies, setPendencies] = useState<ProviderPendency[]>([]);
   const [commercialDemands, setCommercialDemands] = useState<CommercialDemand[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'deliveries' | 'pendencies' | 'commercial' | 'calendar'>('deliveries');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics' | 'deliveries' | 'pendencies' | 'commercial' | 'calendar'>('deliveries');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<DeliveryItem | undefined>(undefined);
   const [filters, setFilters] = useState<DeliveryFilter>({
@@ -441,13 +442,23 @@ export default function App() {
           <>
             <div className="flex space-x-1 mb-6 bg-slate-200/50 p-1 rounded-xl w-fit">
               {isAdmin && (
-                <button
-                  onClick={() => setActiveTab('dashboard')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
-                >
-                  <BarChart3 size={16} />
-                  Dashboard
-                </button>
+                <>
+                  <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                  >
+                    <BarChart3 size={16} />
+                    Dashboard
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('analytics')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'analytics' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                  >
+                    <PieChart size={16} />
+                    Analytics
+                  </button>
+                </>
               )}
               <button onClick={() => setActiveTab('deliveries')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'deliveries' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Entregas</button>
               <button onClick={() => setActiveTab('pendencies')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'pendencies' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Pendências</button>
@@ -470,6 +481,10 @@ export default function App() {
                   systemToday={SYSTEM_TODAY}
                 />
               </div>
+            )}
+
+            {isAdmin && activeTab === 'analytics' && (
+              <AnalyticsView deliveries={deliveries} />
             )}
 
             {activeTab === 'deliveries' && (
