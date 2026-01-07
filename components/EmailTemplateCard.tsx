@@ -43,11 +43,11 @@ export const EmailTemplateCard = forwardRef<HTMLDivElement, EmailTemplateCardPro
                     <div className="mb-8 grid grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
                         <div>
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cliente</span>
-                            <h2 className="text-xl font-bold text-slate-900 m-0">{demand.client_name}</h2>
+                            <h2 className="text-xl font-bold text-slate-900 m-0">{demand.client_name || '—'}</h2>
                         </div>
                         <div>
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Obra/Projeto</span>
-                            <h3 className="text-lg font-semibold text-slate-700 m-0">{demand.project_name}</h3>
+                            <h3 className="text-lg font-semibold text-slate-700 m-0">{demand.project_name || demand.title}</h3>
                         </div>
                         <div>
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Prazo Original</span>
