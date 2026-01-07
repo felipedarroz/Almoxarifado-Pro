@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CommercialDemand, DemandPriority, UserRole } from '../types';
-import { Plus, Search, Calendar, Briefcase, Trash2, CheckCircle2, Clock, X, Save, CheckSquare, Pencil, AlertCircle, Check, Square } from 'lucide-react';
+import { Plus, Search, Calendar, Briefcase, Trash2, CheckCircle2, Clock, X, Save, CheckSquare, Pencil, AlertCircle, Check, Square, ImageDown } from 'lucide-react';
 import { formatDate } from '../utils';
+import html2canvas from 'html2canvas';
+import { EmailTemplateCard } from './EmailTemplateCard';
 
 interface CommercialPanelProps {
     demands: CommercialDemand[];
@@ -29,13 +31,51 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
     const [editingDemand, setEditingDemand] = useState<CommercialDemand | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+    // Novo estado para controlar qual demanda será "fotografada"
+    const [demandForImage, setDemandForImage] = useState<CommercialDemand | null>(null);
+    // Referência para o elemento escondido
+    const imageTemplateRef = useRef<HTMLDivElement>(null);
+
     const [formData, setFormData] = useState<Partial<CommercialDemand>>({
         title: '',
+        client_name: '',
+        project_name: '',
         deadline: systemToday,
         items: '',
         priority: DemandPriority.MEDIUM,
         status: 'Pendente'
     });
+
+    // NOVA FUNÇÃO: Gera a imagem e baixa
+    const handleGenerateImage = async (demand: CommercialDemand) => {
+        setDemandForImage(demand);
+
+        setTimeout(async () => {
+            if (imageTemplateRef.current) {
+                try {
+                    const canvas = await html2canvas(imageTemplateRef.current, {
+                        scale: 2,
+                        backgroundColor: null,
+                    });
+
+                    const image = canvas.toDataURL("image/png");
+                    const link = document.createElement('a');
+                    link.href = image;
+                    // Usa project_name ou title para o nome do arquivo
+                    const safeName = (demand.project_name || demand.title).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    link.download = `CONCLUIDO_${safeName}.png`;
+                    link.click();
+
+                    alert("Imagem gerada! Verifique seus downloads e anexe ao e-mail.");
+                } catch (error) {
+                    console.error("Erro ao gerar imagem:", error);
+                    alert("Não foi possível gerar a imagem.");
+                } finally {
+                    setDemandForImage(null);
+                }
+            }
+        }, 100);
+    };
 
     const canEdit = userRole !== UserRole.VIEWER;
 
@@ -50,19 +90,34 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (formData.title && formData.deadline && formData.items) {
+        // Permite salvar se tiver título OU (cliente E projeto)
+        const hasTitle = formData.title || (formData.client_name && formData.project_name);
+
+        if (hasTitle && formData.deadline && formData.items) {
+            // Constrói o título se não estiver preenchido explicito (usado para compatibilidade)
+            const finalTitle = formData.title || `${formData.client_name} - ${formData.project_name}`;
+
+            const demandData = {
+                ...formData,
+                title: finalTitle,
+                client_name: formData.client_name,
+                project_name: formData.project_name
+            } as CommercialDemand;
+
             if (editingDemand) {
-                onUpdateDemand({ ...editingDemand, ...formData } as CommercialDemand);
+                onUpdateDemand({ ...editingDemand, ...demandData });
             } else {
                 onAddDemand({
                     id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                    title: formData.title,
+                    title: finalTitle,
+                    client_name: formData.client_name,
+                    project_name: formData.project_name,
                     requestDate: systemToday,
                     deadline: formData.deadline,
                     items: formData.items,
                     priority: formData.priority || DemandPriority.MEDIUM,
                     status: 'Pendente'
-                } as CommercialDemand);
+                });
             }
             setIsModalOpen(false);
         }
@@ -237,6 +292,15 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.status === 'Concluído' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
                         {item.status}
                     </span>
+                    {canEdit && progress === 100 && item.status !== 'Concluído' && (
+                        <button
+                            onClick={() => handleGenerateImage(item)}
+                            title="Baixar Imagem de Conclusão para E-mail"
+                            className="flex items-center gap-1 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg shadow-sm transition-colors mr-2"
+                        >
+                            <ImageDown size={12} /> Gerar Imagem
+                        </button>
+                    )}
                     {canEdit && item.status !== 'Concluído' && (
                         <button onClick={() => onCompleteDemand(item.id, systemToday)} className="text-[10px] font-bold text-green-600 border border-green-200 px-3 py-1.5 rounded-lg bg-white hover:bg-green-50 shadow-sm transition-colors">
                             Concluir
@@ -249,6 +313,9 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
 
     return (
         <div className="space-y-6">
+            {/* Template escondido para geração de imagem */}
+            <EmailTemplateCard ref={imageTemplateRef} demand={demandForImage} />
+
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <div>
                     <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Briefcase className="text-purple-600" /> Comercial</h2>
@@ -259,7 +326,7 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <input type="text" placeholder="Filtrar..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                     </div>
-                    {canEdit && <button onClick={() => { setEditingDemand(null); setFormData({ title: '', deadline: systemToday, items: '', priority: DemandPriority.MEDIUM, status: 'Pendente' }); setIsModalOpen(true); }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition-colors">+ Nova Demanda</button>}
+                    {canEdit && <button onClick={() => { setEditingDemand(null); setFormData({ title: '', client_name: '', project_name: '', deadline: systemToday, items: '', priority: DemandPriority.MEDIUM, status: 'Pendente' }); setIsModalOpen(true); }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition-colors">+ Nova Demanda</button>}
                 </div>
             </div>
 
@@ -289,9 +356,15 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
                             <button onClick={() => setIsModalOpen(false)} className="text-purple-400 hover:text-purple-600"><X size={20} /></button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Título / Obra</label>
-                                <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Cliente</label>
+                                    <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.client_name || ''} onChange={e => setFormData({ ...formData, client_name: e.target.value })} placeholder="Nome do Cliente" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Obra / Projeto</label>
+                                    <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.project_name || ''} onChange={e => setFormData({ ...formData, project_name: e.target.value })} placeholder="Identificação da Obra" />
+                                </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
