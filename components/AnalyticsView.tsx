@@ -190,14 +190,17 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries, commer
                                     innerRadius={60}
                                     outerRadius={80}
                                     paddingAngle={5}
-                                    dataKey="value"
+                                    label={({ name, percent, value }) => `${value}`}
                                 >
                                     {statusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
                                 <Tooltip />
-                                <Legend />
+                                <Legend formatter={(value, entry: any) => {
+                                    const { payload } = entry;
+                                    return `${value} (${payload.value})`;
+                                }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
