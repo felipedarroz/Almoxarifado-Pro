@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart } from 'lucide-react';
-import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority } from './types';
+import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
 import { StatusBadge } from './components/StatusBadge';
 import { AnalyticsView } from './components/AnalyticsView';
 import { DeliveryForm } from './components/DeliveryForm';
@@ -55,10 +55,8 @@ export default function App() {
   // but for now we'll keep it as local state or fetch it if needed.
   // We will remove the initial local users storage logic for auth purposes.
   const [users, setUsers] = useState<User[]>([]);
-  const [receivers, setReceivers] = useState<string[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.RECEIVERS);
-    return saved ? JSON.parse(saved) : INITIAL_RECEIVERS;
-  });
+  // Receivers now store Technicians (objects)
+  const [receivers, setReceivers] = useState<Technician[]>([]);
 
   /* REMOVING LOCALSTORAGE INIT
   const [deliveries, setDeliveries] = useState<DeliveryItem[]>(() => {
@@ -101,14 +99,16 @@ export default function App() {
   const loadData = async (companyId: string) => {
     setSaveStatus('saving');
     try {
-      const [del, pen, com] = await Promise.all([
+      const [del, pen, com, techs] = await Promise.all([
         dataService.getDeliveries(companyId),
         dataService.getPendencies(companyId),
-        dataService.getDemands(companyId)
+        dataService.getDemands(companyId),
+        dataService.getTechnicians(companyId)
       ]);
       setDeliveries(del);
       setPendencies(pen);
       setCommercialDemands(com);
+      setReceivers(techs);
 
       // If admin, fetch users too
       if (currentUser?.role === UserRole.ADMIN) {
@@ -434,9 +434,26 @@ export default function App() {
             }}
             onCreateUser={(u) => { alert('Criação de usuários desabilitada. Utilize o painel externo.'); }}
             onDeleteUser={(id) => { alert('Remoção de usuários desabilitada. Utilize o painel externo.'); }}
-            receivers={receivers}
-            onAddReceiver={(r) => setReceivers(prev => [...prev, r])} // Keep local for now or move to DB later
-            onDeleteReceiver={(r) => setReceivers(prev => prev.filter(x => x !== r))}
+            receivers={receivers.map(r => r.name)}
+            technicians={receivers}
+            onAddReceiver={async (name) => {
+              if (!currentUser?.company_id) return;
+              try {
+                const newTech = await dataService.createTechnician(name, currentUser.company_id);
+                setReceivers(prev => [...prev, newTech]);
+              } catch (e) { console.error(e); alert('Erro ao adicionar técnico.'); }
+            }}
+            onDeleteReceiver={async (name) => {
+              // Encontra o ID pelo nome (já que o admin panel deleta por nome na interface antiga)
+              // Idealmente, refatorar admin panel para passar o objeto inteiro ou ID.
+              const tech = receivers.find(t => t.name === name);
+              if (tech) {
+                try {
+                  await dataService.deleteTechnician(tech.id);
+                  setReceivers(prev => prev.filter(t => t.id !== tech.id));
+                } catch (e) { console.error(e); alert('Erro ao remover técnico.'); }
+              }
+            }}
           />
         ) : (
           <>
@@ -562,7 +579,7 @@ export default function App() {
                                   onChange={(e) => handleUpdateReceiver(item.id, e.target.value)}
                                 >
                                   <option value="">Selecione o Técnico...</option>
-                                  {receivers.map(r => <option key={r} value={r}>{r}</option>)}
+                                  {receivers.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                                 </select>
                               </td>
                               <td className="px-4 py-3">
@@ -721,7 +738,7 @@ export default function App() {
         )}
       </main>
 
-      {isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers} systemToday={SYSTEM_TODAY} />}
+      {isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers.map(r => r.name)} systemToday={SYSTEM_TODAY} />}
 
       <ReportsModal
         isOpen={showReportsModal}

@@ -61,6 +61,12 @@ export interface CommercialDemand {
   company_id?: string;
 }
 
+export interface Technician {
+  id: string;
+  name: string;
+  company_id: string;
+}
+
 export type DeliveryFilter = {
   invoiceNumber: string;
   startDate: string;

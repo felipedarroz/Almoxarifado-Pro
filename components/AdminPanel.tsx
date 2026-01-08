@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { User, UserRole, DeliveryItem, DeliveryStatus, AdminStatus } from '../types';
+import { User, UserRole, DeliveryItem, DeliveryStatus, AdminStatus, Technician } from '../types';
 import { Upload, UserCog, Save, Plus, Trash2, Key, FileSpreadsheet, AlertCircle, Settings, Truck } from 'lucide-react';
 import * as XLSX from '@e965/xlsx';
 import { generateId } from '../utils';
@@ -14,6 +14,7 @@ interface AdminPanelProps {
   onCreateUser: (user: User) => void;
   onDeleteUser: (userId: string) => void;
   receivers?: string[];
+  technicians?: Technician[];
   onAddReceiver?: (name: string) => void;
   onDeleteReceiver?: (name: string) => void;
 }
@@ -25,6 +26,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onCreateUser,
   onDeleteUser,
   receivers = [],
+  technicians = [],
   onAddReceiver,
   onDeleteReceiver
 }) => {
@@ -271,17 +273,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </form>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {receivers.map((receiver) => (
-                  <div key={receiver} className="bg-white border border-slate-200 px-3 py-2 rounded flex justify-between items-center group">
-                    <span className="text-sm font-medium text-slate-700">{receiver}</span>
-                    <button
-                      onClick={() => onDeleteReceiver && onDeleteReceiver(receiver)}
-                      className="text-slate-300 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                {technicians.length > 0 ? (
+                  technicians.map((tech) => (
+                    <div key={tech.id} className="bg-white border border-slate-200 px-3 py-2 rounded flex justify-between items-center group">
+                      <span className="text-sm font-medium text-slate-700">{tech.name}</span>
+                      <button
+                        onClick={() => onDeleteReceiver && onDeleteReceiver(tech.name)}
+                        className="text-slate-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  receivers.map((receiver) => (
+                    <div key={receiver} className="bg-white border border-slate-200 px-3 py-2 rounded flex justify-between items-center group">
+                      <span className="text-sm font-medium text-slate-700">{receiver}</span>
+                      <button
+                        onClick={() => onDeleteReceiver && onDeleteReceiver(receiver)}
+                        className="text-slate-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

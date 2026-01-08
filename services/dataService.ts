@@ -1,6 +1,6 @@
 
 import { supabase } from './supabaseClient';
-import { DeliveryItem, ProviderPendency, CommercialDemand } from '../types';
+import { DeliveryItem, ProviderPendency, CommercialDemand, Technician } from '../types';
 
 // Mappers
 const mapDeliveryToApp = (data: any): DeliveryItem => ({
@@ -265,6 +265,34 @@ export const dataService = {
             .update({ role })
             .eq('id', id);
 
+        if (error) throw error;
+    },
+
+    // Technicians
+    async getTechnicians(companyId: string) {
+        const { data, error } = await supabase
+            .from('technicians')
+            .select('*')
+            .eq('company_id', companyId)
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        return (data || []) as Technician[];
+    },
+
+    async createTechnician(name: string, companyId: string) {
+        const { data, error } = await supabase
+            .from('technicians')
+            .insert({ name, company_id: companyId })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data as Technician;
+    },
+
+    async deleteTechnician(id: string) {
+        const { error } = await supabase.from('technicians').delete().eq('id', id);
         if (error) throw error;
     }
 };
