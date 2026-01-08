@@ -222,12 +222,25 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries, commer
                             </thead>
                             <tbody>
                                 {deliveries
-                                    .filter(d => d.status !== DeliveryStatus.DELIVERED && d.status !== DeliveryStatus.FULL_RETURN)
+                                    .filter(d => {
+                                        const s = d.status.toLowerCase();
+                                        return s !== 'entregue' && s !== 'devolvido totalmente';
+                                    })
                                     .sort((a, b) => new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime())
                                     .slice(0, 10)
                                     .map(d => (
                                         <tr key={d.id} className="border-b hover:bg-slate-50">
-                                            <td className="px-3 py-2 font-medium">{d.invoiceNumber}</td>
+                                            <td className="px-3 py-2">
+                                                <div className="font-medium text-slate-800">{d.invoiceNumber}</div>
+                                                {d.status !== DeliveryStatus.PENDING && (
+                                                    <div className={`text-[10px] font-bold uppercase mt-0.5 ${d.status.toLowerCase().includes('parcial') ? 'text-yellow-600' :
+                                                        d.status.toLowerCase().includes('retirado') ? 'text-orange-600' :
+                                                            'text-slate-500'
+                                                        }`}>
+                                                        {d.status}
+                                                    </div>
+                                                )}
+                                            </td>
                                             <td className="px-3 py-2 text-red-500 font-bold">
                                                 {Math.floor((new Date().getTime() - new Date(d.issueDate).getTime()) / (1000 * 60 * 60 * 24))} dias
                                             </td>
