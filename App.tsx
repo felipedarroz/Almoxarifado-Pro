@@ -229,6 +229,12 @@ export default function App() {
       const matchStart = filters.startDate ? item.issueDate >= filters.startDate : true;
       const matchEnd = filters.endDate ? item.issueDate <= filters.endDate : true;
       return matchInvoice && matchStatus && matchStart && matchEnd && matchAdminStatus;
+    }).sort((a, b) => {
+      // 1. Sort by Date Descending
+      if (a.issueDate > b.issueDate) return -1;
+      if (a.issueDate < b.issueDate) return 1;
+      // 2. Sort by Invoice Number Descending
+      return b.invoiceNumber.localeCompare(a.invoiceNumber, undefined, { numeric: true });
     });
   }, [deliveries, filters]);
 

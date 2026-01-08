@@ -49,7 +49,8 @@ export const dataService = {
             .from('deliveries')
             .select('*')
             .eq('company_id', companyId)
-            .order('created_at', { ascending: false });
+            .order('issue_date', { ascending: false })
+            .order('invoice_number', { ascending: false });
 
         if (error) throw error;
         return (data || []).map(mapDeliveryToApp);
