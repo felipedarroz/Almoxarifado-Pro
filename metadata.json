@@ -1,5 +1,5 @@
 {
-  "name": "Almoxarifado Pro Ofc",
+  "name": "PRUMO Gestor de Processos",
   "description": "A delivery management system with role-based access control (Admin, Editor, Viewer), database import, and AI-powered reporting.",
   "requestFramePermissions": []
 }

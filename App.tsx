@@ -367,7 +367,7 @@ export default function App() {
         <div className="flex flex-col items-start px-6 py-6 border-b border-slate-800">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-blue-600 p-2 rounded-lg"><Package className="text-white w-6 h-6" /></div>
-            <h1 className="text-lg font-bold text-white tracking-tight">Almoxarifado Pro</h1>
+            <h1 className="text-xl font-bold text-white tracking-wide">PRUMO <span className="text-orange-500 text-base font-normal">Gestor</span></h1>
           </div>
           <div onClick={handleManualSave} className="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center gap-1">
             {saveStatus === 'saved' ? <CheckCircle size={10} /> : <SaveIcon size={10} className="animate-spin" />}
@@ -500,23 +500,23 @@ export default function App() {
         {/* Content Top Bar (Desktop) */}
         {/* Content Top Bar (Desktop) */}
         <header className={`hidden md:flex items-center justify-between px-8 py-5 backdrop-blur-sm sticky top-0 z-20 transition-colors duration-300 ${activeTab === 'dashboard' ? 'bg-indigo-50/80 border-b border-indigo-100' :
-            activeTab === 'analytics' ? 'bg-purple-50/80 border-b border-purple-100' :
-              activeTab === 'deliveries' ? 'bg-blue-50/80 border-b border-blue-100' :
-                activeTab === 'pendencies' ? 'bg-orange-50/80 border-b border-orange-100' :
-                  activeTab === 'commercial' ? 'bg-purple-50/80 border-b border-purple-100' :
-                    activeTab === 'calendar' ? 'bg-pink-50/80 border-b border-pink-100' :
-                      activeTab === 'admin' ? 'bg-slate-200/80 border-b border-slate-300' :
-                        'bg-slate-50/50'
+          activeTab === 'analytics' ? 'bg-purple-50/80 border-b border-purple-100' :
+            activeTab === 'deliveries' ? 'bg-blue-50/80 border-b border-blue-100' :
+              activeTab === 'pendencies' ? 'bg-orange-50/80 border-b border-orange-100' :
+                activeTab === 'commercial' ? 'bg-purple-50/80 border-b border-purple-100' :
+                  activeTab === 'calendar' ? 'bg-pink-50/80 border-b border-pink-100' :
+                    activeTab === 'admin' ? 'bg-slate-200/80 border-b border-slate-300' :
+                      'bg-slate-50/50'
           }`}>
           <div>
             <h2 className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${activeTab === 'dashboard' ? 'text-indigo-900' :
-                activeTab === 'analytics' ? 'text-purple-900' :
-                  activeTab === 'deliveries' ? 'text-blue-900' :
-                    activeTab === 'pendencies' ? 'text-orange-900' :
-                      activeTab === 'commercial' ? 'text-purple-900' :
-                        activeTab === 'calendar' ? 'text-pink-900' :
-                          activeTab === 'admin' ? 'text-slate-900' :
-                            'text-slate-800'
+              activeTab === 'analytics' ? 'text-purple-900' :
+                activeTab === 'deliveries' ? 'text-blue-900' :
+                  activeTab === 'pendencies' ? 'text-orange-900' :
+                    activeTab === 'commercial' ? 'text-purple-900' :
+                      activeTab === 'calendar' ? 'text-pink-900' :
+                        activeTab === 'admin' ? 'text-slate-900' :
+                          'text-slate-800'
               }`}>
               {activeTab === 'dashboard' && 'Dashboard Gerencial'}
               {activeTab === 'analytics' && 'Análise de Dados'}
@@ -527,13 +527,13 @@ export default function App() {
               {activeTab === 'admin' && 'Painel Administrativo'}
             </h2>
             <p className={`text-sm font-medium mt-1 transition-colors duration-300 ${activeTab === 'dashboard' ? 'text-indigo-600/80' :
-                activeTab === 'analytics' ? 'text-purple-600/80' :
-                  activeTab === 'deliveries' ? 'text-blue-600/80' :
-                    activeTab === 'pendencies' ? 'text-orange-600/80' :
-                      activeTab === 'commercial' ? 'text-purple-600/80' :
-                        activeTab === 'calendar' ? 'text-pink-600/80' :
-                          activeTab === 'admin' ? 'text-slate-600/80' :
-                            'text-slate-500'
+              activeTab === 'analytics' ? 'text-purple-600/80' :
+                activeTab === 'deliveries' ? 'text-blue-600/80' :
+                  activeTab === 'pendencies' ? 'text-orange-600/80' :
+                    activeTab === 'commercial' ? 'text-purple-600/80' :
+                      activeTab === 'calendar' ? 'text-pink-600/80' :
+                        activeTab === 'admin' ? 'text-slate-600/80' :
+                          'text-slate-500'
               }`}>
               {activeTab === 'dashboard' && 'Visão geral dos indicadores de performance'}
               {activeTab === 'analytics' && 'Métricas detalhadas e relatórios estatísticos'}

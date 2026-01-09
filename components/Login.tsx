@@ -222,7 +222,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
               <Package className="text-white w-7 h-7" />
             </div>
-            <h1 className="text-3xl font-bold mb-2">Almoxarifado Pro</h1>
+            <h1 className="text-3xl font-bold mb-2">PRUMO Gestor de Processos</h1>
             <p className="text-blue-100 text-sm leading-relaxed">
               Sistema integrado de gestão de entregas, pendências e controle comercial.
             </p>
@@ -386,7 +386,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
       {/* Footer Info */}
       <div className="absolute bottom-4 text-center w-full z-10 text-slate-500 text-xs opacity-60">
-        &copy; {new Date().getFullYear()} Almoxarifado Pro. Todos os direitos reservados.
+        &copy; {new Date().getFullYear()} PRUMO Gestor de Processos. Todos os direitos reservados.
       </div>
 
       {/* Helper icon for errors */}

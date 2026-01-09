@@ -80,7 +80,7 @@ export const EmailTemplateCard = forwardRef<HTMLDivElement, EmailTemplateCardPro
 
                     {/* Rodapé */}
                     <div className="mt-8 pt-4 border-t border-slate-100 text-center text-xs text-slate-400">
-                        Gerado automaticamente pelo sistema Almoxarifado Pro - Consigaz
+                        Gerado automaticamente pelo sistema PRUMO Gestor de Processos - Consigaz
                     </div>
                 </div>
             </div>
