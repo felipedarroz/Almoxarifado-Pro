@@ -186,6 +186,11 @@ export default function App() {
   }, [filters]);
 
   const isAdmin = currentUser?.role === UserRole.ADMIN;
+  const isManager = currentUser?.role === UserRole.MANAGER;
+  const isEditor = currentUser?.role === UserRole.EDITOR;
+
+  const canViewDashboard = isAdmin || isManager;
+  const canEdit = isAdmin || isEditor;
 
   const handleManualSave = () => {
     if (currentUser?.company_id) loadData(currentUser.company_id);
@@ -410,7 +415,7 @@ export default function App() {
             Calendário
           </button>
 
-          {isAdmin && (
+          {canViewDashboard && (
             <>
               <div className="pt-4 pb-2">
                 <p className="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Administração</p>
@@ -430,18 +435,20 @@ export default function App() {
                   Analytics
                 </button>
 
-                <button
-                  onClick={() => startTransition(() => setActiveTab('admin'))}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'admin' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
-                >
-                  <LayoutDashboard size={18} className={activeTab === 'admin' ? 'text-indigo-400' : 'text-slate-500'} />
-                  Painel Admin
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => startTransition(() => setActiveTab('admin'))}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'admin' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  >
+                    <LayoutDashboard size={18} className={activeTab === 'admin' ? 'text-indigo-400' : 'text-slate-500'} />
+                    Painel Admin
+                  </button>
+                )}
               </div>
             </>
           )}
 
-          {(currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.MANAGER) && (
+          {(isAdmin || isManager || isEditor) && (
             <button
               onClick={() => setShowReportsModal(true)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all duration-200"
@@ -546,7 +553,7 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             {/* Global Actions can go here */}
-            {activeTab === 'deliveries' && !showReportsModal && currentUser.role !== UserRole.VIEWER && (
+            {activeTab === 'deliveries' && !showReportsModal && canEdit && (
               <button
                 onClick={() => { setEditingItem(undefined); setIsFormOpen(true); }}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm shadow-blue-200 transition-all font-medium active:scale-95"
@@ -613,7 +620,7 @@ export default function App() {
           ) : (
             <div className="space-y-6 animate-in fade-in duration-500 slide-in-from-bottom-4">
 
-              {isAdmin && activeTab === 'dashboard' && (
+              {canViewDashboard && activeTab === 'dashboard' && (
                 <div className="animate-in fade-in duration-300">
                   <DashboardStats
                     items={deliveries}
@@ -624,7 +631,7 @@ export default function App() {
                 </div>
               )}
 
-              {isAdmin && activeTab === 'analytics' && (
+              {canViewDashboard && activeTab === 'analytics' && (
                 <AnalyticsView deliveries={deliveries} commercialDemands={commercialDemands} />
               )}
 
@@ -669,6 +676,7 @@ export default function App() {
                           {paginatedDeliveries.length > 0 ? paginatedDeliveries.map(item => {
                             const currentAdminStatus = item.adminStatus || AdminStatus.OPEN;
                             const isLocked = currentAdminStatus !== AdminStatus.OPEN && !isAdmin;
+                            const isReadOnly = !canEdit;
 
                             return (
                               <tr key={item.id} className="hover:bg-slate-50">
@@ -676,7 +684,7 @@ export default function App() {
                                 <td className="px-4 py-3 text-slate-500">{formatDate(item.issueDate)}</td>
                                 <td className="px-4 py-3">
                                   <select
-                                    disabled={isLocked}
+                                    disabled={isLocked || isReadOnly}
                                     value={item.status}
                                     onChange={(e) => handleUpdateStatus(item.id, e.target.value as DeliveryStatus)}
                                     className={`w-full max-w-[140px] px-2 py-1 text-xs border rounded-full font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 ${getStatusColorClass(item.status)} ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
@@ -687,7 +695,7 @@ export default function App() {
                                 <td className="px-4 py-3">
                                   <input
                                     type="date"
-                                    disabled={isLocked}
+                                    disabled={isLocked || isReadOnly}
                                     value={item.deliveryDate || ''}
                                     onChange={(e) => handleUpdateDeliveryDate(item.id, e.target.value)}
                                     className={`w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 bg-white ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : ''}`}
@@ -695,7 +703,7 @@ export default function App() {
                                 </td>
                                 <td className="px-4 py-3">
                                   <select
-                                    disabled={isLocked}
+                                    disabled={isLocked || isReadOnly}
                                     className={`w-full max-w-[180px] px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : 'bg-white'}`}
                                     value={item.receiverName || ''}
                                     onChange={(e) => handleUpdateReceiver(item.id, e.target.value)}
@@ -722,7 +730,7 @@ export default function App() {
                                         <Lock size={12} />
                                       </span>
                                     ) : (
-                                      <button onClick={() => { setEditingItem(item); setIsFormOpen(true); }} className="text-blue-600 hover:text-blue-800 text-xs">Editar</button>
+                                      canEdit && <button onClick={() => { setEditingItem(item); setIsFormOpen(true); }} className="text-blue-600 hover:text-blue-800 text-xs">Editar</button>
                                     )}
                                     {isAdmin && <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-700 text-xs">Excluir</button>}
                                   </div>

@@ -77,7 +77,7 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
         }, 100);
     };
 
-    const canEdit = userRole !== UserRole.VIEWER;
+    const canEdit = userRole === UserRole.ADMIN || userRole === UserRole.EDITOR;
 
     const filteredDemands = demands.filter(d =>
         d.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
