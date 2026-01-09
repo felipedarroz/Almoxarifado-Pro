@@ -435,14 +435,10 @@ export default function App() {
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-slate-300">
-        <div className="flex flex-col items-start px-6 py-6 border-b border-slate-800">
-          <div className="flex flex-col items-start gap-0.5 mb-4">
-            <h1 className="text-2xl font-black text-white tracking-wider leading-none">PRUMO</h1>
-            <span className="text-[10px] text-white font-medium tracking-[0.2em] uppercase opacity-80">Gestor de Processos</span>
-          </div>
-          <div onClick={handleManualSave} className="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center gap-1">
-            {saveStatus === 'saved' ? <CheckCircle size={10} /> : <SaveIcon size={10} className="animate-spin" />}
-            {saveStatus === 'saved' ? 'Sincronizado' : 'Salvando...'}
+        <div className="flex flex-col items-start px-6 py-8 border-b border-slate-800">
+          <div className="flex flex-col items-start gap-1 mb-2">
+            <h1 className="text-4xl font-black text-white tracking-wider leading-none">PRUMO</h1>
+            <span className="text-xs text-slate-400 font-bold tracking-[0.3em] uppercase">Gestor de Processos</span>
           </div>
         </div>
 
@@ -527,6 +523,11 @@ export default function App() {
         </nav>
 
         <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+          <div onClick={handleManualSave} className="mb-4 cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-lg border bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+            {saveStatus === 'saved' ? <CheckCircle size={12} className="text-emerald-500" /> : <SaveIcon size={12} className="animate-spin text-blue-500" />}
+            <span>{saveStatus === 'saved' ? 'Sistema Sincronizado' : 'Salvando alterações...'}</span>
+          </div>
+
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold">
               {currentUser.username.substring(0, 2).toUpperCase()}
