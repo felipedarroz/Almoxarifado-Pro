@@ -462,285 +462,367 @@ export default function App() {
             }}
           />
         ) : (
-          <>
-            <div className="flex space-x-1 mb-6 bg-slate-200/50 p-1 rounded-xl w-fit">
+          <div className="flex flex-col md:flex-row gap-8 animate-in fade-in duration-500">
+            {/* Sidebar Navigation (Desktop) */}
+            <aside className="hidden md:flex flex-col w-64 shrink-0 space-y-2">
+              <div className="sticky top-24 space-y-2">
+                <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={() => setActiveTab('dashboard')}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'dashboard'
+                          ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
+                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                        }`}
+                    >
+                      <BarChart3 size={18} className={activeTab === 'dashboard' ? 'text-indigo-600' : 'text-slate-400'} />
+                      Dashboard
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('analytics')}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'analytics'
+                          ? 'bg-white text-purple-600 shadow-sm border border-slate-100'
+                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                        }`}
+                    >
+                      <PieChart size={18} className={activeTab === 'analytics' ? 'text-purple-600' : 'text-slate-400'} />
+                      Analytics
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => setActiveTab('deliveries')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries'
+                      ? 'bg-white text-blue-600 shadow-sm border border-slate-100'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                    }`}
+                >
+                  <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-600' : 'text-slate-400'} />
+                  Entregas
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('pendencies')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'pendencies'
+                      ? 'bg-white text-orange-600 shadow-sm border border-slate-100'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                    }`}
+                >
+                  <ClipboardList size={18} className={activeTab === 'pendencies' ? 'text-orange-600' : 'text-slate-400'} />
+                  Pendências
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('commercial')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'commercial'
+                      ? 'bg-white text-purple-600 shadow-sm border border-slate-100'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                    }`}
+                >
+                  <Briefcase size={18} className={activeTab === 'commercial' ? 'text-purple-600' : 'text-slate-400'} />
+                  Comercial
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('calendar')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'calendar'
+                      ? 'bg-white text-pink-600 shadow-sm border border-slate-100'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                    }`}
+                >
+                  <CalendarRange size={18} className={activeTab === 'calendar' ? 'text-pink-600' : 'text-slate-400'} />
+                  Calendário
+                </button>
+              </div>
+            </aside>
+
+            {/* Mobile Navigation (Horizontal Scroll) */}
+            <div className="md:hidden flex space-x-1 mb-6 bg-slate-200/50 p-1 rounded-xl w-full overflow-x-auto no-scrollbar">
               {isAdmin && (
                 <>
                   <button
                     onClick={() => setActiveTab('dashboard')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'dashboard' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
                   >
                     <BarChart3 size={16} />
-                    Dashboard
+                    Panel
                   </button>
 
                   <button
                     onClick={() => setActiveTab('analytics')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'analytics' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'analytics' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
                   >
                     <PieChart size={16} />
                     Analytics
                   </button>
                 </>
               )}
-              <button onClick={() => setActiveTab('deliveries')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'deliveries' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Entregas</button>
-              <button onClick={() => setActiveTab('pendencies')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'pendencies' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Pendências</button>
-              <button onClick={() => setActiveTab('commercial')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'commercial' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Comercial</button>
-              <button onClick={() => setActiveTab('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'calendar' ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>
+              <button onClick={() => setActiveTab('deliveries')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'deliveries' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Entregas</button>
+              <button onClick={() => setActiveTab('pendencies')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'pendencies' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Pendências</button>
+              <button onClick={() => setActiveTab('commercial')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'commercial' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Comercial</button>
+              <button onClick={() => setActiveTab('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'calendar' ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>
                 <CalendarRange size={16} /> Calendário
               </button>
             </div>
 
-            {isAdmin && activeTab === 'dashboard' && (
-              <div className="animate-in fade-in duration-300">
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold text-slate-800">Painel de Controle</h2>
-                  <p className="text-sm text-slate-500">Visão integrada dos módulos operacional, de pendências e comercial.</p>
+            {/* Main Content Area */}
+            <div className="flex-1 min-w-0">
+
+              {isAdmin && activeTab === 'dashboard' && (
+                <div className="animate-in fade-in duration-300">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-slate-800">Painel de Controle</h2>
+                    <p className="text-sm text-slate-500">Visão integrada dos módulos operacional, de pendências e comercial.</p>
+                  </div>
+                  <DashboardStats
+                    items={deliveries}
+                    commercialDemands={commercialDemands}
+                    pendencies={pendencies}
+                    systemToday={SYSTEM_TODAY}
+                  />
                 </div>
-                <DashboardStats
-                  items={deliveries}
-                  commercialDemands={commercialDemands}
+              )}
+
+              {isAdmin && activeTab === 'analytics' && (
+                <AnalyticsView deliveries={deliveries} commercialDemands={commercialDemands} />
+              )}
+
+              {activeTab === 'deliveries' && (
+                <div className="animate-in fade-in duration-300">
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="relative md:col-span-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <input type="text" placeholder="Buscar NF..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white" value={filters.invoiceNumber} onChange={(e) => setFilters(prev => ({ ...prev, invoiceNumber: e.target.value }))} />
+                      </div>
+                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}>
+                        <option value="">Status Entrega</option>
+                        {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={filters.adminStatus} onChange={(e) => setFilters(prev => ({ ...prev, adminStatus: e.target.value }))}>
+                        <option value="">Status Admin</option>
+                        {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      <div className="flex gap-2 md:col-span-2">
+                        <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white" title="Início Emissão" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))} />
+                        <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white" title="Fim Emissão" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 border-b">
+                          <tr>
+                            <th className="px-4 py-3 font-bold text-slate-800">Nota Fiscal</th>
+                            <th className="px-4 py-3 font-bold text-slate-800">Emissão</th>
+                            <th className="px-4 py-3 font-bold text-slate-800">Status</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 w-36">Data Entrega</th>
+                            <th className="px-4 py-3 font-bold text-slate-800">Técnico</th>
+                            <th className="px-4 py-3 font-bold text-slate-800">Finalização</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-right">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {paginatedDeliveries.length > 0 ? paginatedDeliveries.map(item => {
+                            // Garante que undefined seja tratado como 'Aberto'
+                            const currentAdminStatus = item.adminStatus || AdminStatus.OPEN;
+                            // Bloqueia edição se Status Admin não for 'Aberto' e usuário não for admin
+                            const isLocked = currentAdminStatus !== AdminStatus.OPEN && !isAdmin;
+
+                            return (
+                              <tr key={item.id} className="hover:bg-slate-50">
+                                <td className="px-4 py-3 font-bold text-slate-900">{item.invoiceNumber}</td>
+                                <td className="px-4 py-3 text-slate-500">{formatDate(item.issueDate)}</td>
+                                <td className="px-4 py-3">
+                                  <select
+                                    disabled={isLocked}
+                                    value={item.status}
+                                    onChange={(e) => handleUpdateStatus(item.id, e.target.value as DeliveryStatus)}
+                                    className={`w-full max-w-[140px] px-2 py-1 text-xs border rounded-full font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 ${getStatusColorClass(item.status)} ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                  >
+                                    {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                                  </select>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <input
+                                    type="date"
+                                    disabled={isLocked}
+                                    value={item.deliveryDate || ''}
+                                    onChange={(e) => handleUpdateDeliveryDate(item.id, e.target.value)}
+                                    className={`w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 bg-white ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : ''}`}
+                                  />
+                                </td>
+                                <td className="px-4 py-3">
+                                  <select
+                                    disabled={isLocked}
+                                    className={`w-full max-w-[180px] px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : 'bg-white'}`}
+                                    value={item.receiverName || ''}
+                                    onChange={(e) => handleUpdateReceiver(item.id, e.target.value)}
+                                  >
+                                    <option value="">Selecione o Técnico...</option>
+                                    {receivers.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
+                                  </select>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <select
+                                    disabled={!isAdmin}
+                                    className={`w-full max-w-[150px] px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${!isAdmin ? 'bg-slate-100 opacity-70 cursor-not-allowed' : 'bg-white'
+                                      }`}
+                                    value={currentAdminStatus}
+                                    onChange={(e) => handleUpdateAdminStatus(item.id, e.target.value as AdminStatus)}
+                                  >
+                                    {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                                  </select>
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <div className="flex justify-end gap-3 font-medium">
+                                    {isLocked ? (
+                                      <span className="text-slate-400 text-xs flex items-center gap-1 cursor-not-allowed" title="Finalizado pelo Administrador">
+                                        <Lock size={12} />
+                                      </span>
+                                    ) : (
+                                      <button onClick={() => { setEditingItem(item); setIsFormOpen(true); }} className="text-blue-600 hover:text-blue-800 text-xs">Editar</button>
+                                    )}
+                                    {isAdmin && <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-700 text-xs">Excluir</button>}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          }) : <tr><td colSpan={7} className="px-6 py-10 text-center text-slate-400 italic">Sem registros.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* PAGINATION CONTROLS */}
+                    {totalPages > 1 && (
+                      <div className="bg-slate-50 border-t border-slate-200 px-4 py-3 flex items-center justify-between">
+                        <div className="text-xs text-slate-500">
+                          Mostrando <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> a <strong>{Math.min(currentPage * ITEMS_PER_PAGE, filteredDeliveries.length)}</strong> de <strong>{filteredDeliveries.length}</strong> registros
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`p-1 rounded hover:bg-slate-200 transition-colors ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600'}`}
+                          >
+                            <ChevronLeft size={20} />
+                          </button>
+                          <span className="text-sm font-medium text-slate-700">
+                            Página {currentPage} de {totalPages}
+                          </span>
+                          <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`p-1 rounded hover:bg-slate-200 transition-colors ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600'}`}
+                          >
+                            <ChevronRight size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'pendencies' && (
+                <PendencyPanel
                   pendencies={pendencies}
-                  systemToday={SYSTEM_TODAY}
+                  onAddPendency={async (p) => {
+                    if (!currentUser.company_id) return;
+                    try {
+                      const saved = await dataService.createPendency(p, currentUser.company_id);
+                      setPendencies(prev => [saved, ...prev]);
+                    } catch (e) { console.error(e); alert('Erro ao salvar pendência'); }
+                  }}
+                  onUpdatePendency={async (p) => {
+                    try {
+                      await dataService.updatePendency(p);
+                      setPendencies(prev => prev.map(old => old.id === p.id ? p : old));
+                    } catch (e) { console.error(e); alert('Erro ao atualizar'); }
+                  }}
+                  onResolvePendency={async (id) => {
+                    const item = pendencies.find(p => p.id === id);
+                    if (item) {
+                      const updated = { ...item, resolved: true };
+                      try {
+                        await dataService.updatePendency(updated);
+                        setPendencies(prev => prev.map(p => p.id === id ? updated : p));
+                      } catch (e) { console.error(e); }
+                    }
+                  }}
+                  onDeletePendency={async (id) => {
+                    if (confirm('Excluir pendência?')) {
+                      try {
+                        await dataService.deletePendency(id);
+                        setPendencies(prev => prev.filter(p => p.id !== id));
+                      } catch (e) { console.error(e); }
+                    }
+                  }}
+                  userRole={currentUser.role}
                 />
-              </div>
-            )}
-
-            {isAdmin && activeTab === 'analytics' && (
-              <AnalyticsView deliveries={deliveries} commercialDemands={commercialDemands} />
-            )}
-
-            {activeTab === 'deliveries' && (
-              <div className="animate-in fade-in duration-300">
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div className="relative md:col-span-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <input type="text" placeholder="Buscar NF..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white" value={filters.invoiceNumber} onChange={(e) => setFilters(prev => ({ ...prev, invoiceNumber: e.target.value }))} />
-                    </div>
-                    <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}>
-                      <option value="">Status Entrega</option>
-                      {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                    <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={filters.adminStatus} onChange={(e) => setFilters(prev => ({ ...prev, adminStatus: e.target.value }))}>
-                      <option value="">Status Admin</option>
-                      {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                    <div className="flex gap-2 md:col-span-2">
-                      <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white" title="Início Emissão" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))} />
-                      <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white" title="Fim Emissão" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 border-b">
-                        <tr>
-                          <th className="px-4 py-3 font-bold text-slate-800">Nota Fiscal</th>
-                          <th className="px-4 py-3 font-bold text-slate-800">Emissão</th>
-                          <th className="px-4 py-3 font-bold text-slate-800">Status</th>
-                          <th className="px-4 py-3 font-bold text-slate-800 w-36">Data Entrega</th>
-                          <th className="px-4 py-3 font-bold text-slate-800">Técnico</th>
-                          <th className="px-4 py-3 font-bold text-slate-800">Finalização</th>
-                          <th className="px-4 py-3 font-bold text-slate-800 text-right">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {paginatedDeliveries.length > 0 ? paginatedDeliveries.map(item => {
-                          // Garante que undefined seja tratado como 'Aberto'
-                          const currentAdminStatus = item.adminStatus || AdminStatus.OPEN;
-                          // Bloqueia edição se Status Admin não for 'Aberto' e usuário não for admin
-                          const isLocked = currentAdminStatus !== AdminStatus.OPEN && !isAdmin;
-
-                          return (
-                            <tr key={item.id} className="hover:bg-slate-50">
-                              <td className="px-4 py-3 font-bold text-slate-900">{item.invoiceNumber}</td>
-                              <td className="px-4 py-3 text-slate-500">{formatDate(item.issueDate)}</td>
-                              <td className="px-4 py-3">
-                                <select
-                                  disabled={isLocked}
-                                  value={item.status}
-                                  onChange={(e) => handleUpdateStatus(item.id, e.target.value as DeliveryStatus)}
-                                  className={`w-full max-w-[140px] px-2 py-1 text-xs border rounded-full font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 ${getStatusColorClass(item.status)} ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                >
-                                  {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                              </td>
-                              <td className="px-4 py-3">
-                                <input
-                                  type="date"
-                                  disabled={isLocked}
-                                  value={item.deliveryDate || ''}
-                                  onChange={(e) => handleUpdateDeliveryDate(item.id, e.target.value)}
-                                  className={`w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 bg-white ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : ''}`}
-                                />
-                              </td>
-                              <td className="px-4 py-3">
-                                <select
-                                  disabled={isLocked}
-                                  className={`w-full max-w-[180px] px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : 'bg-white'}`}
-                                  value={item.receiverName || ''}
-                                  onChange={(e) => handleUpdateReceiver(item.id, e.target.value)}
-                                >
-                                  <option value="">Selecione o Técnico...</option>
-                                  {receivers.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
-                                </select>
-                              </td>
-                              <td className="px-4 py-3">
-                                <select
-                                  disabled={!isAdmin}
-                                  className={`w-full max-w-[150px] px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${!isAdmin ? 'bg-slate-100 opacity-70 cursor-not-allowed' : 'bg-white'
-                                    }`}
-                                  value={currentAdminStatus}
-                                  onChange={(e) => handleUpdateAdminStatus(item.id, e.target.value as AdminStatus)}
-                                >
-                                  {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                              </td>
-                              <td className="px-4 py-3 text-right">
-                                <div className="flex justify-end gap-3 font-medium">
-                                  {isLocked ? (
-                                    <span className="text-slate-400 text-xs flex items-center gap-1 cursor-not-allowed" title="Finalizado pelo Administrador">
-                                      <Lock size={12} />
-                                    </span>
-                                  ) : (
-                                    <button onClick={() => { setEditingItem(item); setIsFormOpen(true); }} className="text-blue-600 hover:text-blue-800 text-xs">Editar</button>
-                                  )}
-                                  {isAdmin && <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-700 text-xs">Excluir</button>}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        }) : <tr><td colSpan={7} className="px-6 py-10 text-center text-slate-400 italic">Sem registros.</td></tr>}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* PAGINATION CONTROLS */}
-                  {totalPages > 1 && (
-                    <div className="bg-slate-50 border-t border-slate-200 px-4 py-3 flex items-center justify-between">
-                      <div className="text-xs text-slate-500">
-                        Mostrando <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> a <strong>{Math.min(currentPage * ITEMS_PER_PAGE, filteredDeliveries.length)}</strong> de <strong>{filteredDeliveries.length}</strong> registros
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                          disabled={currentPage === 1}
-                          className={`p-1 rounded hover:bg-slate-200 transition-colors ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600'}`}
-                        >
-                          <ChevronLeft size={20} />
-                        </button>
-                        <span className="text-sm font-medium text-slate-700">
-                          Página {currentPage} de {totalPages}
-                        </span>
-                        <button
-                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                          disabled={currentPage === totalPages}
-                          className={`p-1 rounded hover:bg-slate-200 transition-colors ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600'}`}
-                        >
-                          <ChevronRight size={20} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'pendencies' && (
-              <PendencyPanel
-                pendencies={pendencies}
-                onAddPendency={async (p) => {
+              )}
+              {activeTab === 'commercial' && <CommercialPanel
+                demands={commercialDemands}
+                onAddDemand={async (d) => {
                   if (!currentUser.company_id) return;
                   try {
-                    const saved = await dataService.createPendency(p, currentUser.company_id);
-                    setPendencies(prev => [saved, ...prev]);
-                  } catch (e) { console.error(e); alert('Erro ao salvar pendência'); }
+                    const saved = await dataService.createDemand(d, currentUser.company_id);
+                    setCommercialDemands(prev => [saved, ...prev]);
+                  } catch (e) { console.error(e); alert("Erro ao salvar demanda"); }
                 }}
-                onUpdatePendency={async (p) => {
+                onUpdateDemand={async (d) => {
                   try {
-                    await dataService.updatePendency(p);
-                    setPendencies(prev => prev.map(old => old.id === p.id ? p : old));
-                  } catch (e) { console.error(e); alert('Erro ao atualizar'); }
+                    await dataService.updateDemand(d);
+                    setCommercialDemands(prev => prev.map(x => x.id === d.id ? d : x));
+                  } catch (e) { console.error(e); }
                 }}
-                onResolvePendency={async (id) => {
-                  const item = pendencies.find(p => p.id === id);
+                onCompleteDemand={async (id, date) => {
+                  const item = commercialDemands.find(d => d.id === id);
                   if (item) {
-                    const updated = { ...item, resolved: true };
+                    const updated = { ...item, status: 'Concluído' as const, completionDate: date };
                     try {
-                      await dataService.updatePendency(updated);
-                      setPendencies(prev => prev.map(p => p.id === id ? updated : p));
+                      await dataService.updateDemand(updated);
+                      setCommercialDemands(prev => prev.map(d => d.id === id ? updated : d));
                     } catch (e) { console.error(e); }
                   }
                 }}
-                onDeletePendency={async (id) => {
-                  if (confirm('Excluir pendência?')) {
+                onUpdateStatus={async (id, s) => {
+                  const item = commercialDemands.find(d => d.id === id);
+                  if (item) {
+                    const updated = { ...item, status: s as any };
                     try {
-                      await dataService.deletePendency(id);
-                      setPendencies(prev => prev.filter(p => p.id !== id));
+                      await dataService.updateDemand(updated);
+                      setCommercialDemands(prev => prev.map(d => d.id === id ? updated : d));
+                    } catch (e) { console.error(e); }
+                  }
+                }}
+                onDeleteDemand={async (id) => {
+                  if (confirm('Excluir solicitação comercial?')) {
+                    try {
+                      await dataService.deleteDemand(id);
+                      setCommercialDemands(prev => prev.filter(d => d.id !== id));
                     } catch (e) { console.error(e); }
                   }
                 }}
                 userRole={currentUser.role}
-              />
-            )}
-            {activeTab === 'commercial' && <CommercialPanel
-              demands={commercialDemands}
-              onAddDemand={async (d) => {
-                if (!currentUser.company_id) return;
-                try {
-                  const saved = await dataService.createDemand(d, currentUser.company_id);
-                  setCommercialDemands(prev => [saved, ...prev]);
-                } catch (e) { console.error(e); alert("Erro ao salvar demanda"); }
-              }}
-              onUpdateDemand={async (d) => {
-                try {
-                  await dataService.updateDemand(d);
-                  setCommercialDemands(prev => prev.map(x => x.id === d.id ? d : x));
-                } catch (e) { console.error(e); }
-              }}
-              onCompleteDemand={async (id, date) => {
-                const item = commercialDemands.find(d => d.id === id);
-                if (item) {
-                  const updated = { ...item, status: 'Concluído' as const, completionDate: date };
-                  try {
-                    await dataService.updateDemand(updated);
-                    setCommercialDemands(prev => prev.map(d => d.id === id ? updated : d));
-                  } catch (e) { console.error(e); }
-                }
-              }}
-              onUpdateStatus={async (id, s) => {
-                const item = commercialDemands.find(d => d.id === id);
-                if (item) {
-                  const updated = { ...item, status: s as any };
-                  try {
-                    await dataService.updateDemand(updated);
-                    setCommercialDemands(prev => prev.map(d => d.id === id ? updated : d));
-                  } catch (e) { console.error(e); }
-                }
-              }}
-              onDeleteDemand={async (id) => {
-                if (confirm('Excluir solicitação comercial?')) {
-                  try {
-                    await dataService.deleteDemand(id);
-                    setCommercialDemands(prev => prev.filter(d => d.id !== id));
-                  } catch (e) { console.error(e); }
-                }
-              }}
-              userRole={currentUser.role}
-              systemToday={SYSTEM_TODAY}
-            />}
+                systemToday={SYSTEM_TODAY}
+              />}
 
-            {activeTab === 'calendar' && (
-              <CalendarView
-                commercialDemands={commercialDemands}
-                pendencies={pendencies}
-              />
-            )}
+              {activeTab === 'calendar' && (
+                <CalendarView
+                  commercialDemands={commercialDemands}
+                  pendencies={pendencies}
+                />
+              )}
 
-          </>
+            </div>
+          </div>
         )}
       </main>
 
