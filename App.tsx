@@ -366,12 +366,8 @@ export default function App() {
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-slate-300">
         <div className="flex flex-col items-start px-6 py-6 border-b border-slate-800">
-          <div className="flex items-center gap-3 mb-4">
-            <img src={logo} alt="PRUMO Logo" className="w-10 h-auto brightness-0 invert opacity-90" />
-            <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-white tracking-wide leading-none">PRUMO</h1>
-              <span className="text-[10px] text-orange-500 font-semibold tracking-wider uppercase">Gestor de Processos</span>
-            </div>
+          <div className="flex items-center justify-start mb-4">
+            <img src={logo} alt="PRUMO Logo" className="h-12 w-auto object-contain brightness-0 invert opacity-90" />
           </div>
           <div onClick={handleManualSave} className="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center gap-1">
             {saveStatus === 'saved' ? <CheckCircle size={10} /> : <SaveIcon size={10} className="animate-spin" />}
