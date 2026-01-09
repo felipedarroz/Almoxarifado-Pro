@@ -69,7 +69,7 @@ export default function App() {
   const [pendencies, setPendencies] = useState<ProviderPendency[]>([]);
   const [commercialDemands, setCommercialDemands] = useState<CommercialDemand[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics' | 'deliveries' | 'pendencies' | 'commercial' | 'calendar'>('deliveries');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics' | 'deliveries' | 'pendencies' | 'commercial' | 'calendar' | 'admin'>('deliveries');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<DeliveryItem | undefined>(undefined);
   const [filters, setFilters] = useState<DeliveryFilter>({
@@ -83,7 +83,7 @@ export default function App() {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+
   const [showDashboard, setShowDashboard] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
   const [showReportsModal, setShowReportsModal] = useState(false);
@@ -431,10 +431,10 @@ export default function App() {
                 </button>
 
                 <button
-                  onClick={() => startTransition(() => setShowAdminPanel(!showAdminPanel))}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${showAdminPanel ? 'bg-slate-700 text-white' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  onClick={() => startTransition(() => setActiveTab('admin'))}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'admin' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
                 >
-                  <LayoutDashboard size={18} className={showAdminPanel ? 'text-white' : 'text-slate-500'} />
+                  <LayoutDashboard size={18} className={activeTab === 'admin' ? 'text-indigo-400' : 'text-slate-500'} />
                   Painel Admin
                 </button>
               </div>
@@ -495,7 +495,7 @@ export default function App() {
         </div>
 
         {/* Mobile Nav (Horizontal Scroll) */}
-        {!showAdminPanel && (
+        {activeTab !== 'admin' && (
           <div className="md:hidden bg-white border-b border-slate-200 overflow-x-auto">
             <div className="flex space-x-1 p-2 min-w-max">
               <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
@@ -516,7 +516,7 @@ export default function App() {
               {activeTab === 'pendencies' && 'Quadro de Pendências'}
               {activeTab === 'commercial' && 'Gestão Comercial'}
               {activeTab === 'calendar' && 'Calendário Operacional'}
-              {showAdminPanel && ' / Painel Administrativo'}
+              {activeTab === 'admin' && 'Painel Administrativo'}
             </h2>
             <p className="text-sm text-slate-500 font-medium mt-1">
               {activeTab === 'dashboard' && 'Visão geral dos indicadores de performance'}
@@ -530,7 +530,7 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             {/* Global Actions can go here */}
-            {!showAdminPanel && currentUser.role !== UserRole.VIEWER && activeTab === 'deliveries' && (
+            {activeTab === 'deliveries' && !showReportsModal && currentUser.role !== UserRole.VIEWER && (
               <button
                 onClick={() => { setEditingItem(undefined); setIsFormOpen(true); }}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm shadow-blue-200 transition-all font-medium active:scale-95"
@@ -544,7 +544,7 @@ export default function App() {
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 pb-20 scroll-smooth">
-          {showAdminPanel ? (
+          {activeTab === 'admin' ? (
             <AdminPanel
               users={users}
               onUpdateUserRole={async (id, role) => {
@@ -570,7 +570,7 @@ export default function App() {
                   alert("Erro ao salvar dados importados.");
                 } finally {
                   setSaveStatus('saved');
-                  setShowAdminPanel(false);
+                  setActiveTab('deliveries');
                 }
               }}
               onCreateUser={(u) => { alert('Criação de usuários desabilitada. Utilize o painel externo.'); }}
