@@ -113,26 +113,26 @@ export const PendencyPanel: React.FC<PendencyPanelProps> = ({
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-slate-600">
-                        <thead className="bg-orange-50 border-b border-orange-100">
+                        <thead className="bg-orange-50 border-b border-orange-100 text-center">
                             <tr>
-                                <th className="px-4 py-3 font-semibold text-orange-900 border-r border-orange-200">Prestador</th>
-                                <th className="px-4 py-3 font-semibold text-orange-900 border-r border-orange-200">Ordem de Serviço</th>
-                                <th className="px-4 py-3 font-semibold text-orange-900 border-r border-orange-200">Item</th>
-                                <th className="px-4 py-3 font-semibold text-orange-900 text-center border-r border-orange-200">Quantidade</th>
-                                <th className="px-4 py-3 font-semibold text-orange-900 border-r border-orange-200">Motivo</th>
-                                <th className="px-4 py-3 font-semibold text-orange-900 w-40 border-r border-orange-200">Previsão Resolução</th>
-                                <th className="px-4 py-3 font-semibold text-orange-900 text-right">Ações</th>
+                                <th className="px-4 py-3 font-bold text-slate-800 border-r border-orange-200">Prestador</th>
+                                <th className="px-4 py-3 font-bold text-slate-800 border-r border-orange-200">Ordem de Serviço</th>
+                                <th className="px-4 py-3 font-bold text-slate-800 border-r border-orange-200">Item</th>
+                                <th className="px-4 py-3 font-bold text-slate-800 border-r border-orange-200">Quantidade</th>
+                                <th className="px-4 py-3 font-bold text-slate-800 border-r border-orange-200">Motivo</th>
+                                <th className="px-4 py-3 font-bold text-slate-800 w-40 border-r border-orange-200">Previsão Resolução</th>
+                                <th className="px-4 py-3 font-bold text-slate-800">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 text-center">
                             {filteredPendencies.length > 0 ? (
                                 filteredPendencies.map(item => (
                                     <tr key={item.id} className={`hover:bg-slate-50 transition-colors ${item.resolved ? 'opacity-60 bg-slate-50' : ''}`}>
-                                        <td className="px-4 py-3 font-medium text-slate-900 border-r border-slate-100">{item.providerName}</td>
-                                        <td className="px-4 py-3 font-mono text-xs text-slate-600 border-r border-slate-100">{item.referenceNumber}</td>
-                                        <td className="px-4 py-3 border-r border-slate-100">{item.itemName}</td>
-                                        <td className="px-4 py-3 text-center font-bold border-r border-slate-100">{item.quantity}</td>
-                                        <td className="px-4 py-3 text-slate-600 italic max-w-xs truncate border-r border-slate-100" title={item.reason}>
+                                        <td className="px-4 py-3 font-medium text-slate-700 border-r border-slate-100">{item.providerName}</td>
+                                        <td className="px-4 py-3 font-medium text-slate-700 border-r border-slate-100">{item.referenceNumber}</td>
+                                        <td className="px-4 py-3 font-medium text-slate-700 border-r border-slate-100">{item.itemName}</td>
+                                        <td className="px-4 py-3 font-bold text-slate-700 border-r border-slate-100">{item.quantity}</td>
+                                        <td className="px-4 py-3 font-medium text-slate-700 italic max-w-xs truncate border-r border-slate-100" title={item.reason}>
                                             {item.reason}
                                         </td>
                                         <td className="px-4 py-3 border-r border-slate-100">
@@ -143,15 +143,15 @@ export const PendencyPanel: React.FC<PendencyPanelProps> = ({
                                                 <input
                                                     type="date"
                                                     disabled={!canEdit}
-                                                    className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-orange-500 bg-white"
+                                                    className="w-full px-2 py-1 text-xs text-center border border-slate-300 rounded focus:ring-1 focus:ring-orange-500 bg-white"
                                                     value={item.expectedResolutionDate || ''}
                                                     onChange={(e) => handleDateChange(item.id, e.target.value)}
                                                     title="Definir data prevista para resolução"
                                                 />
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center justify-center gap-2">
                                                 {canEdit && !item.resolved && (
                                                     <button
                                                         onClick={() => onResolvePendency(item.id)}
