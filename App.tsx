@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
@@ -360,224 +359,244 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <header className="bg-slate-900 shadow-md sticky top-0 z-30 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="bg-blue-600 p-2 rounded-lg"><Package className="text-white w-6 h-6" /></div>
-              <h1 className="text-xl font-bold text-white hidden sm:block">Almoxarifado Pro</h1>
+    <div className="flex h-screen overflow-hidden bg-slate-50">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-slate-300">
+        <div className="flex flex-col items-start px-6 py-6 border-b border-slate-800">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-blue-600 p-2 rounded-lg"><Package className="text-white w-6 h-6" /></div>
+            <h1 className="text-lg font-bold text-white tracking-tight">Almoxarifado Pro</h1>
+          </div>
+          <div onClick={handleManualSave} className="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center gap-1">
+            {saveStatus === 'saved' ? <CheckCircle size={10} /> : <SaveIcon size={10} className="animate-spin" />}
+            {saveStatus === 'saved' ? 'Sincronizado' : 'Salvando...'}
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+          <p className="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Menu Principal</p>
+
+          <button
+            onClick={() => setActiveTab('deliveries')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries' ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+          >
+            <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-400' : 'text-slate-500'} />
+            Entregas
+          </button>
+
+          <button
+            onClick={() => setActiveTab('pendencies')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'pendencies' ? 'bg-orange-600/10 text-orange-400 border border-orange-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+          >
+            <ClipboardList size={18} className={activeTab === 'pendencies' ? 'text-orange-400' : 'text-slate-500'} />
+            Pendências
+          </button>
+
+          <button
+            onClick={() => setActiveTab('commercial')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'commercial' ? 'bg-purple-600/10 text-purple-400 border border-purple-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+          >
+            <Briefcase size={18} className={activeTab === 'commercial' ? 'text-purple-400' : 'text-slate-500'} />
+            Comercial
+          </button>
+
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'calendar' ? 'bg-pink-600/10 text-pink-400 border border-pink-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+          >
+            <CalendarRange size={18} className={activeTab === 'calendar' ? 'text-pink-400' : 'text-slate-500'} />
+            Calendário
+          </button>
+
+          {isAdmin && (
+            <>
+              <div className="pt-4 pb-2">
+                <p className="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Administração</p>
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'dashboard' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                >
+                  <BarChart3 size={18} className={activeTab === 'dashboard' ? 'text-indigo-400' : 'text-slate-500'} />
+                  Dashboard
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'analytics' ? 'bg-purple-600/10 text-purple-400 border border-purple-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                >
+                  <PieChart size={18} className={activeTab === 'analytics' ? 'text-purple-400' : 'text-slate-500'} />
+                  Analytics
+                </button>
+
+                <button
+                  onClick={() => setShowAdminPanel(!showAdminPanel)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${showAdminPanel ? 'bg-slate-700 text-white' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                >
+                  <LayoutDashboard size={18} className={showAdminPanel ? 'text-white' : 'text-slate-500'} />
+                  Painel Admin
+                </button>
+              </div>
+            </>
+          )}
+
+          {(currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.MANAGER) && (
+            <button
+              onClick={() => setShowReportsModal(true)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all duration-200"
+            >
+              <FileText size={18} className="text-slate-500" />
+              Relatórios
+            </button>
+          )}
+
+        </nav>
+
+        <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold">
+              {currentUser.username.substring(0, 2).toUpperCase()}
             </div>
-            <div onClick={handleManualSave} className="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-colors">
-              {saveStatus === 'saved' ? <CheckCircle size={12} className="inline mr-1" /> : <SaveIcon size={12} className="inline mr-1 animate-spin" />}
-              {saveStatus === 'saved' ? 'Sincronizado' : 'Salvando...'}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{currentUser.username}</p>
+              <p className="text-xs text-slate-500 truncate">{currentUser.company || '...'}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="text-right mr-3 hidden sm:block border-r border-slate-700 pr-4">
-              <div className="text-xs text-slate-300 font-medium">{currentUser.username}</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">{currentUser.company || '...'}</div>
-            </div>
+          <div className="grid grid-cols-2 gap-2">
             {isAdmin && (
-              <div className="flex gap-1 border-r border-slate-700 pr-2 mr-2">
-                <button onClick={handleExportBackup} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"><Download size={18} /></button>
-                <label className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
-                  <UploadIcon size={18} /><input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+              <div className="col-span-2 grid grid-cols-2 gap-2 mb-2">
+                <button onClick={handleExportBackup} className="flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors text-xs" title="Backup Download">
+                  <Download size={14} /> Backup
+                </button>
+                <label className="flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors text-xs cursor-pointer" title="Importar Backup">
+                  <UploadIcon size={14} /> Importar <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
                 </label>
               </div>
             )}
-
-            {/* Reports Button */}
-            {(currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.MANAGER) && (
-              <button
-                onClick={() => setShowReportsModal(true)}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors mr-2"
-              >
-                <FileText size={16} />
-                Relatórios
-              </button>
-            )}
-
-            {isAdmin && <button onClick={() => setShowAdminPanel(!showAdminPanel)} className={`p-2 rounded-lg transition-colors ${showAdminPanel ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`} title="Painel Administrativo"><LayoutDashboard size={20} /></button>}
-            {!showAdminPanel && currentUser.role !== UserRole.VIEWER && (
-              <button onClick={() => { setEditingItem(undefined); setIsFormOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg shadow-sm transition-colors"><Plus size={20} /></button>
-            )}
-            <button onClick={() => supabase.auth.signOut()} className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"><LogOut size={20} /></button>
+            <button onClick={() => supabase.auth.signOut()} className="col-span-2 flex items-center justify-center gap-2 w-full p-2 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-red-400 transition-colors text-xs font-medium">
+              <LogOut size={14} /> Sair do Sistema
+            </button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showAdminPanel ? (
-          <AdminPanel
-            users={users}
-            onUpdateUserRole={async (id, role) => {
-              try {
-                await dataService.updateUserRole(id, role);
-                setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u));
-                alert('Função atualizada com sucesso!');
-              } catch (e) {
-                console.error(e);
-                alert('Erro ao atualizar função do usuário.');
-              }
-            }}
-            onImportData={async (items) => {
-              if (!currentUser?.company_id) return;
-              setSaveStatus('saving');
-              try {
-                const promises = items.map(item => dataService.createDelivery(item, currentUser.company_id!));
-                const savedItems = await Promise.all(promises);
-                setDeliveries(prev => [...savedItems, ...prev]);
-                alert(`${savedItems.length} registros importados e salvos com sucesso!`);
-              } catch (error) {
-                console.error("Erro ao importar:", error);
-                alert("Erro ao salvar dados importados.");
-              } finally {
-                setSaveStatus('saved');
-                setShowAdminPanel(false);
-              }
-            }}
-            onCreateUser={(u) => { alert('Criação de usuários desabilitada. Utilize o painel externo.'); }}
-            onDeleteUser={(id) => { alert('Remoção de usuários desabilitada. Utilize o painel externo.'); }}
-            receivers={receivers.map(r => r.name)}
-            technicians={receivers}
-            onAddReceiver={async (name) => {
-              if (!currentUser?.company_id) return;
-              try {
-                const newTech = await dataService.createTechnician(name, currentUser.company_id);
-                setReceivers(prev => [...prev, newTech]);
-              } catch (e) { console.error(e); alert('Erro ao adicionar técnico.'); }
-            }}
-            onDeleteReceiver={async (name) => {
-              // Encontra o ID pelo nome (já que o admin panel deleta por nome na interface antiga)
-              // Idealmente, refatorar admin panel para passar o objeto inteiro ou ID.
-              const tech = receivers.find(t => t.name === name);
-              if (tech) {
-                try {
-                  await dataService.deleteTechnician(tech.id);
-                  setReceivers(prev => prev.filter(t => t.id !== tech.id));
-                } catch (e) { console.error(e); alert('Erro ao remover técnico.'); }
-              }
-            }}
-          />
-        ) : (
-          <div className="flex flex-col md:flex-row gap-8 animate-in fade-in duration-500">
-            {/* Sidebar Navigation (Desktop) */}
-            <aside className="hidden md:flex flex-col w-64 shrink-0 space-y-2">
-              <div className="sticky top-24 space-y-2">
-                <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Principal</p>
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-                {isAdmin && (
-                  <>
-                    <button
-                      onClick={() => setActiveTab('dashboard')}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'dashboard'
-                          ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
-                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-                        }`}
-                    >
-                      <BarChart3 size={18} className={activeTab === 'dashboard' ? 'text-indigo-600' : 'text-slate-400'} />
-                      Dashboard
-                    </button>
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-slate-900 text-white shadow-md">
+          <div className="flex items-center gap-2">
+            <Package className="text-blue-500 w-6 h-6" />
+            <h1 className="font-bold">Almoxarifado Pro</h1>
+          </div>
+          <button onClick={() => supabase.auth.signOut()}><LogOut size={20} /></button>
+        </div>
 
-                    <button
-                      onClick={() => setActiveTab('analytics')}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'analytics'
-                          ? 'bg-white text-purple-600 shadow-sm border border-slate-100'
-                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-                        }`}
-                    >
-                      <PieChart size={18} className={activeTab === 'analytics' ? 'text-purple-600' : 'text-slate-400'} />
-                      Analytics
-                    </button>
-                  </>
-                )}
-
-                <button
-                  onClick={() => setActiveTab('deliveries')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries'
-                      ? 'bg-white text-blue-600 shadow-sm border border-slate-100'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-                    }`}
-                >
-                  <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-600' : 'text-slate-400'} />
-                  Entregas
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('pendencies')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'pendencies'
-                      ? 'bg-white text-orange-600 shadow-sm border border-slate-100'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-                    }`}
-                >
-                  <ClipboardList size={18} className={activeTab === 'pendencies' ? 'text-orange-600' : 'text-slate-400'} />
-                  Pendências
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('commercial')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'commercial'
-                      ? 'bg-white text-purple-600 shadow-sm border border-slate-100'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-                    }`}
-                >
-                  <Briefcase size={18} className={activeTab === 'commercial' ? 'text-purple-600' : 'text-slate-400'} />
-                  Comercial
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('calendar')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === 'calendar'
-                      ? 'bg-white text-pink-600 shadow-sm border border-slate-100'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-                    }`}
-                >
-                  <CalendarRange size={18} className={activeTab === 'calendar' ? 'text-pink-600' : 'text-slate-400'} />
-                  Calendário
-                </button>
-              </div>
-            </aside>
-
-            {/* Mobile Navigation (Horizontal Scroll) */}
-            <div className="md:hidden flex space-x-1 mb-6 bg-slate-200/50 p-1 rounded-xl w-full overflow-x-auto no-scrollbar">
-              {isAdmin && (
-                <>
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'dashboard' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
-                  >
-                    <BarChart3 size={16} />
-                    Panel
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('analytics')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'analytics' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}
-                  >
-                    <PieChart size={16} />
-                    Analytics
-                  </button>
-                </>
-              )}
-              <button onClick={() => setActiveTab('deliveries')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'deliveries' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Entregas</button>
-              <button onClick={() => setActiveTab('pendencies')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'pendencies' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Pendências</button>
-              <button onClick={() => setActiveTab('commercial')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'commercial' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>Comercial</button>
-              <button onClick={() => setActiveTab('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'calendar' ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-500 hover:bg-slate-200'}`}>
-                <CalendarRange size={16} /> Calendário
-              </button>
+        {/* Mobile Nav (Horizontal Scroll) */}
+        {!showAdminPanel && (
+          <div className="md:hidden bg-white border-b border-slate-200 overflow-x-auto">
+            <div className="flex space-x-1 p-2 min-w-max">
+              <button onClick={() => setActiveTab('deliveries')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
+              <button onClick={() => setActiveTab('pendencies')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
+              <button onClick={() => setActiveTab('commercial')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'commercial' ? 'bg-purple-50 text-purple-600' : 'text-slate-600'}`}>Comercial</button>
+              {isAdmin && <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Dashboard</button>}
             </div>
+          </div>
+        )}
 
-            {/* Main Content Area */}
-            <div className="flex-1 min-w-0">
+        {/* Content Top Bar (Desktop) */}
+        <header className="hidden md:flex items-center justify-between px-8 py-5 bg-slate-50/50 backdrop-blur-sm sticky top-0 z-20">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+              {activeTab === 'dashboard' && 'Dashboard Gerencial'}
+              {activeTab === 'analytics' && 'Análise de Dados'}
+              {activeTab === 'deliveries' && 'Controle de Entregas'}
+              {activeTab === 'pendencies' && 'Quadro de Pendências'}
+              {activeTab === 'commercial' && 'Gestão Comercial'}
+              {activeTab === 'calendar' && 'Calendário Operacional'}
+              {showAdminPanel && ' / Painel Administrativo'}
+            </h2>
+            <p className="text-sm text-slate-500 font-medium mt-1">
+              {activeTab === 'dashboard' && 'Visão geral dos indicadores de performance'}
+              {activeTab === 'analytics' && 'Métricas detalhadas e relatórios estatísticos'}
+              {activeTab === 'deliveries' && 'Gerencie todas as notas fiscais e entregas'}
+              {activeTab === 'pendencies' && 'Acompanhe pendências com fornecedores'}
+              {activeTab === 'commercial' && 'Pipeline de solicitações e orçamentos'}
+              {activeTab === 'calendar' && 'Agenda de entregas e prazos importantes'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Global Actions can go here */}
+            {!showAdminPanel && currentUser.role !== UserRole.VIEWER && (
+              <button
+                onClick={() => { setEditingItem(undefined); setIsFormOpen(true); }}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm shadow-blue-200 transition-all font-medium active:scale-95"
+              >
+                <Plus size={18} />
+                <span>Novo Item</span>
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Scrollable Content Area */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 pb-20 scroll-smooth">
+          {showAdminPanel ? (
+            <AdminPanel
+              users={users}
+              onUpdateUserRole={async (id, role) => {
+                try {
+                  await dataService.updateUserRole(id, role);
+                  setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u));
+                  alert('Função atualizada com sucesso!');
+                } catch (e) {
+                  console.error(e);
+                  alert('Erro ao atualizar função do usuário.');
+                }
+              }}
+              onImportData={async (items) => {
+                if (!currentUser?.company_id) return;
+                setSaveStatus('saving');
+                try {
+                  const promises = items.map(item => dataService.createDelivery(item, currentUser.company_id!));
+                  const savedItems = await Promise.all(promises);
+                  setDeliveries(prev => [...savedItems, ...prev]);
+                  alert(`${savedItems.length} registros importados e salvos com sucesso!`);
+                } catch (error) {
+                  console.error("Erro ao importar:", error);
+                  alert("Erro ao salvar dados importados.");
+                } finally {
+                  setSaveStatus('saved');
+                  setShowAdminPanel(false);
+                }
+              }}
+              onCreateUser={(u) => { alert('Criação de usuários desabilitada. Utilize o painel externo.'); }}
+              onDeleteUser={(id) => { alert('Remoção de usuários desabilitada. Utilize o painel externo.'); }}
+              receivers={receivers.map(r => r.name)}
+              technicians={receivers}
+              onAddReceiver={async (name) => {
+                if (!currentUser?.company_id) return;
+                try {
+                  const newTech = await dataService.createTechnician(name, currentUser.company_id);
+                  setReceivers(prev => [...prev, newTech]);
+                } catch (e) { console.error(e); alert('Erro ao adicionar técnico.'); }
+              }}
+              onDeleteReceiver={async (name) => {
+                const tech = receivers.find(t => t.name === name);
+                if (tech) {
+                  try {
+                    await dataService.deleteTechnician(tech.id);
+                    setReceivers(prev => prev.filter(t => t.id !== tech.id));
+                  } catch (e) { console.error(e); alert('Erro ao remover técnico.'); }
+                }
+              }}
+            />
+          ) : (
+            <div className="space-y-6 animate-in fade-in duration-500 slide-in-from-bottom-4">
 
               {isAdmin && activeTab === 'dashboard' && (
                 <div className="animate-in fade-in duration-300">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-bold text-slate-800">Painel de Controle</h2>
-                    <p className="text-sm text-slate-500">Visão integrada dos módulos operacional, de pendências e comercial.</p>
-                  </div>
                   <DashboardStats
                     items={deliveries}
                     commercialDemands={commercialDemands}
@@ -597,19 +616,19 @@ export default function App() {
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       <div className="relative md:col-span-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input type="text" placeholder="Buscar NF..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white" value={filters.invoiceNumber} onChange={(e) => setFilters(prev => ({ ...prev, invoiceNumber: e.target.value }))} />
+                        <input type="text" placeholder="Buscar NF..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={filters.invoiceNumber} onChange={(e) => setFilters(prev => ({ ...prev, invoiceNumber: e.target.value }))} />
                       </div>
-                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}>
+                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}>
                         <option value="">Status Entrega</option>
                         {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
-                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={filters.adminStatus} onChange={(e) => setFilters(prev => ({ ...prev, adminStatus: e.target.value }))}>
+                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={filters.adminStatus} onChange={(e) => setFilters(prev => ({ ...prev, adminStatus: e.target.value }))}>
                         <option value="">Status Admin</option>
                         {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                       <div className="flex gap-2 md:col-span-2">
-                        <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white" title="Início Emissão" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))} />
-                        <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white" title="Fim Emissão" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))} />
+                        <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" title="Início Emissão" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))} />
+                        <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" title="Fim Emissão" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))} />
                       </div>
                     </div>
                   </div>
@@ -630,9 +649,7 @@ export default function App() {
                         </thead>
                         <tbody className="divide-y">
                           {paginatedDeliveries.length > 0 ? paginatedDeliveries.map(item => {
-                            // Garante que undefined seja tratado como 'Aberto'
                             const currentAdminStatus = item.adminStatus || AdminStatus.OPEN;
-                            // Bloqueia edição se Status Admin não for 'Aberto' e usuário não for admin
                             const isLocked = currentAdminStatus !== AdminStatus.OPEN && !isAdmin;
 
                             return (
@@ -824,15 +841,15 @@ export default function App() {
             </div>
           </div>
         )}
-      </main>
+    </main>
 
-      {isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers.map(r => r.name)} systemToday={SYSTEM_TODAY} />}
+      { isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers.map(r => r.name)} systemToday={SYSTEM_TODAY} /> }
 
-      <ReportsModal
-        isOpen={showReportsModal}
-        onClose={() => setShowReportsModal(false)}
-        companyId={currentUser.company_id || ''}
-      />
-    </div>
+  <ReportsModal
+    isOpen={showReportsModal}
+    onClose={() => setShowReportsModal(false)}
+    companyId={currentUser.company_id || ''}
+  />
+    </div >
   );
 }
