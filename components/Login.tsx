@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import logo from '../assets/logo.png';
 
 import { Package, Lock, User as UserIcon, Key, ArrowRight, UserPlus, AlertCircle, Building2 } from 'lucide-react';
 import { User, UserRole, UserStatus } from '../types';
@@ -219,10 +220,13 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         {/* Lado Esquerdo (Info) */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 md:w-5/12 text-white flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
-            <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
-              <Package className="text-white w-7 h-7" />
+            <div className="mb-6">
+              <img src={logo} alt="PRUMO Logo" className="w-24 h-auto brightness-0 invert" />
             </div>
-            <h1 className="text-3xl font-bold mb-2">PRUMO Gestor de Processos</h1>
+            <div className="flex flex-col mb-4">
+              <h1 className="text-5xl font-bold text-white tracking-wide leading-none">PRUMO</h1>
+              <span className="text-lg font-light text-blue-100 tracking-[0.2em] uppercase mt-1">Gestor de Processos</span>
+            </div>
             <p className="text-blue-100 text-sm leading-relaxed">
               Sistema integrado de gestão de entregas, pendências e controle comercial.
             </p>
