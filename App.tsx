@@ -465,16 +465,7 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            {isAdmin && (
-              <div className="col-span-2 grid grid-cols-2 gap-2 mb-2">
-                <button onClick={handleExportBackup} className="flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors text-xs" title="Backup Download">
-                  <Download size={14} /> Backup
-                </button>
-                <label className="flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors text-xs cursor-pointer" title="Importar Backup">
-                  <UploadIcon size={14} /> Importar <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
-                </label>
-              </div>
-            )}
+
             <button onClick={() => supabase.auth.signOut()} className="col-span-2 flex items-center justify-center gap-2 w-full p-2 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-red-400 transition-colors text-xs font-medium">
               <LogOut size={14} /> Sair do Sistema
             </button>
@@ -507,9 +498,26 @@ export default function App() {
         )}
 
         {/* Content Top Bar (Desktop) */}
-        <header className="hidden md:flex items-center justify-between px-8 py-5 bg-slate-50/50 backdrop-blur-sm sticky top-0 z-20">
+        {/* Content Top Bar (Desktop) */}
+        <header className={`hidden md:flex items-center justify-between px-8 py-5 backdrop-blur-sm sticky top-0 z-20 transition-colors duration-300 ${activeTab === 'dashboard' ? 'bg-indigo-50/80 border-b border-indigo-100' :
+            activeTab === 'analytics' ? 'bg-purple-50/80 border-b border-purple-100' :
+              activeTab === 'deliveries' ? 'bg-blue-50/80 border-b border-blue-100' :
+                activeTab === 'pendencies' ? 'bg-orange-50/80 border-b border-orange-100' :
+                  activeTab === 'commercial' ? 'bg-purple-50/80 border-b border-purple-100' :
+                    activeTab === 'calendar' ? 'bg-pink-50/80 border-b border-pink-100' :
+                      activeTab === 'admin' ? 'bg-slate-200/80 border-b border-slate-300' :
+                        'bg-slate-50/50'
+          }`}>
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+            <h2 className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${activeTab === 'dashboard' ? 'text-indigo-900' :
+                activeTab === 'analytics' ? 'text-purple-900' :
+                  activeTab === 'deliveries' ? 'text-blue-900' :
+                    activeTab === 'pendencies' ? 'text-orange-900' :
+                      activeTab === 'commercial' ? 'text-purple-900' :
+                        activeTab === 'calendar' ? 'text-pink-900' :
+                          activeTab === 'admin' ? 'text-slate-900' :
+                            'text-slate-800'
+              }`}>
               {activeTab === 'dashboard' && 'Dashboard Gerencial'}
               {activeTab === 'analytics' && 'Análise de Dados'}
               {activeTab === 'deliveries' && 'Controle de Entregas'}
@@ -518,7 +526,15 @@ export default function App() {
               {activeTab === 'calendar' && 'Calendário Operacional'}
               {activeTab === 'admin' && 'Painel Administrativo'}
             </h2>
-            <p className="text-sm text-slate-500 font-medium mt-1">
+            <p className={`text-sm font-medium mt-1 transition-colors duration-300 ${activeTab === 'dashboard' ? 'text-indigo-600/80' :
+                activeTab === 'analytics' ? 'text-purple-600/80' :
+                  activeTab === 'deliveries' ? 'text-blue-600/80' :
+                    activeTab === 'pendencies' ? 'text-orange-600/80' :
+                      activeTab === 'commercial' ? 'text-purple-600/80' :
+                        activeTab === 'calendar' ? 'text-pink-600/80' :
+                          activeTab === 'admin' ? 'text-slate-600/80' :
+                            'text-slate-500'
+              }`}>
               {activeTab === 'dashboard' && 'Visão geral dos indicadores de performance'}
               {activeTab === 'analytics' && 'Métricas detalhadas e relatórios estatísticos'}
               {activeTab === 'deliveries' && 'Gerencie todas as notas fiscais e entregas'}
