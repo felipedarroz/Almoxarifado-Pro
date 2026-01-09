@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useTransition } from 'react';
+
 import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
 import { StatusBadge } from './components/StatusBadge';
@@ -49,6 +50,7 @@ const INITIAL_RECEIVERS = ["ID GÁS", "R MARINHO", "STARGAZ", "VICENTE", "TÉCNI
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   // Users state is now only for admin panel viewing, fetched from profiles potentially,
   // but for now we'll keep it as local state or fetch it if needed.
@@ -377,7 +379,7 @@ export default function App() {
           <p className="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Menu Principal</p>
 
           <button
-            onClick={() => setActiveTab('deliveries')}
+            onClick={() => startTransition(() => setActiveTab('deliveries'))}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries' ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
           >
             <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-400' : 'text-slate-500'} />
@@ -385,7 +387,7 @@ export default function App() {
           </button>
 
           <button
-            onClick={() => setActiveTab('pendencies')}
+            onClick={() => startTransition(() => setActiveTab('pendencies'))}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'pendencies' ? 'bg-orange-600/10 text-orange-400 border border-orange-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
           >
             <ClipboardList size={18} className={activeTab === 'pendencies' ? 'text-orange-400' : 'text-slate-500'} />
@@ -393,7 +395,7 @@ export default function App() {
           </button>
 
           <button
-            onClick={() => setActiveTab('commercial')}
+            onClick={() => startTransition(() => setActiveTab('commercial'))}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'commercial' ? 'bg-purple-600/10 text-purple-400 border border-purple-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
           >
             <Briefcase size={18} className={activeTab === 'commercial' ? 'text-purple-400' : 'text-slate-500'} />
@@ -401,7 +403,7 @@ export default function App() {
           </button>
 
           <button
-            onClick={() => setActiveTab('calendar')}
+            onClick={() => startTransition(() => setActiveTab('calendar'))}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'calendar' ? 'bg-pink-600/10 text-pink-400 border border-pink-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
           >
             <CalendarRange size={18} className={activeTab === 'calendar' ? 'text-pink-400' : 'text-slate-500'} />
@@ -413,7 +415,7 @@ export default function App() {
               <div className="pt-4 pb-2">
                 <p className="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Administração</p>
                 <button
-                  onClick={() => setActiveTab('dashboard')}
+                  onClick={() => startTransition(() => setActiveTab('dashboard'))}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'dashboard' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
                 >
                   <BarChart3 size={18} className={activeTab === 'dashboard' ? 'text-indigo-400' : 'text-slate-500'} />
@@ -421,7 +423,7 @@ export default function App() {
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('analytics')}
+                  onClick={() => startTransition(() => setActiveTab('analytics'))}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'analytics' ? 'bg-purple-600/10 text-purple-400 border border-purple-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
                 >
                   <PieChart size={18} className={activeTab === 'analytics' ? 'text-purple-400' : 'text-slate-500'} />
@@ -429,7 +431,7 @@ export default function App() {
                 </button>
 
                 <button
-                  onClick={() => setShowAdminPanel(!showAdminPanel)}
+                  onClick={() => startTransition(() => setShowAdminPanel(!showAdminPanel))}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${showAdminPanel ? 'bg-slate-700 text-white' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
                 >
                   <LayoutDashboard size={18} className={showAdminPanel ? 'text-white' : 'text-slate-500'} />
@@ -496,10 +498,10 @@ export default function App() {
         {!showAdminPanel && (
           <div className="md:hidden bg-white border-b border-slate-200 overflow-x-auto">
             <div className="flex space-x-1 p-2 min-w-max">
-              <button onClick={() => setActiveTab('deliveries')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
-              <button onClick={() => setActiveTab('pendencies')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
-              <button onClick={() => setActiveTab('commercial')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'commercial' ? 'bg-purple-50 text-purple-600' : 'text-slate-600'}`}>Comercial</button>
-              {isAdmin && <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Dashboard</button>}
+              <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
+              <button onClick={() => startTransition(() => setActiveTab('pendencies'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
+              <button onClick={() => startTransition(() => setActiveTab('commercial'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'commercial' ? 'bg-purple-50 text-purple-600' : 'text-slate-600'}`}>Comercial</button>
+              {isAdmin && <button onClick={() => startTransition(() => setActiveTab('dashboard'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Dashboard</button>}
             </div>
           </div>
         )}
@@ -528,7 +530,7 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             {/* Global Actions can go here */}
-            {!showAdminPanel && currentUser.role !== UserRole.VIEWER && (
+            {!showAdminPanel && currentUser.role !== UserRole.VIEWER && activeTab === 'deliveries' && (
               <button
                 onClick={() => { setEditingItem(undefined); setIsFormOpen(true); }}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm shadow-blue-200 transition-all font-medium active:scale-95"
