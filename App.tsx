@@ -438,7 +438,7 @@ export default function App() {
         <div className="flex flex-col items-start px-6 py-8 border-b border-slate-800">
           <div className="flex flex-col items-start gap-1 mb-2">
             <h1 className="text-4xl font-black text-white tracking-wider leading-none">PRUMO</h1>
-            <span className="text-xs text-slate-400 font-bold tracking-[0.3em] uppercase">Gestor de Processos</span>
+            <span className="text-[10px] text-slate-400 font-bold tracking-[0.15em] uppercase whitespace-nowrap">Gestor de Processos</span>
           </div>
         </div>
 
