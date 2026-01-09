@@ -839,17 +839,17 @@ export default function App() {
               )}
 
             </div>
-          </div>
-        )}
-    </main>
+          )}
+        </main>
 
-      { isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers.map(r => r.name)} systemToday={SYSTEM_TODAY} /> }
+        {isFormOpen && <DeliveryForm initialData={editingItem} onSave={handleSave} onCancel={() => setIsFormOpen(false)} userRole={currentUser.role} receivers={receivers.map(r => r.name)} systemToday={SYSTEM_TODAY} />}
 
-  <ReportsModal
-    isOpen={showReportsModal}
-    onClose={() => setShowReportsModal(false)}
-    companyId={currentUser.company_id || ''}
-  />
-    </div >
+        <ReportsModal
+          isOpen={showReportsModal}
+          onClose={() => setShowReportsModal(false)}
+          companyId={currentUser.company_id || ''}
+        />
+      </div>
+    </div>
   );
 }
