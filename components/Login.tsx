@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import logo from '../assets/logo.png';
 
 import { Package, Lock, User as UserIcon, Key, ArrowRight, UserPlus, AlertCircle, Building2 } from 'lucide-react';
 import { User, UserRole, UserStatus } from '../types';
@@ -220,8 +219,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         {/* Lado Esquerdo (Info) */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 md:w-5/12 text-white flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
-            <div className="mb-8">
-              <img src={logo} alt="PRUMO Logo" className="w-64 h-auto object-contain" />
+            <div className="flex flex-col mb-8">
+              <h1 className="text-6xl font-black text-white tracking-wide leading-none mb-2">PRUMO</h1>
+              <span className="text-xl text-white/90 font-medium tracking-[0.3em] uppercase">Gestor de Processos</span>
             </div>
             <p className="text-blue-100 text-sm leading-relaxed">
               Sistema integrado de gestão de entregas, pendências e controle comercial.

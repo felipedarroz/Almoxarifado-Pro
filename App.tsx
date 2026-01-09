@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useTransition } from 'react';
-import logo from './assets/logo.png';
 
 import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
@@ -366,8 +365,9 @@ export default function App() {
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-slate-300">
         <div className="flex flex-col items-start px-6 py-6 border-b border-slate-800">
-          <div className="flex items-center justify-start mb-4">
-            <img src={logo} alt="PRUMO Logo" className="h-12 w-auto object-contain" />
+          <div className="flex flex-col items-start gap-0.5 mb-4">
+            <h1 className="text-2xl font-black text-white tracking-wider leading-none">PRUMO</h1>
+            <span className="text-[10px] text-white font-medium tracking-[0.2em] uppercase opacity-80">Gestor de Processos</span>
           </div>
           <div onClick={handleManualSave} className="cursor-pointer text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center gap-1">
             {saveStatus === 'saved' ? <CheckCircle size={10} /> : <SaveIcon size={10} className="animate-spin" />}
