@@ -187,20 +187,36 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries, commer
                                     data={statusData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    label={({ name, percent, value }) => `${value}`}
+                                    innerRadius={75}
+                                    outerRadius={95}
+                                    paddingAngle={4}
+                                    dataKey="value"
+                                    cornerRadius={6}
                                 >
-                                    {statusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
+                                    {statusData.map((entry, index) => {
+                                        // Simple logic to try and match colors if possible, otherwise fallback to index
+                                        let fillColor = COLORS[index % COLORS.length];
+                                        const name = entry.name.toLowerCase();
+                                        if (name.includes('entregue')) fillColor = '#10b981'; // Green from trend chart
+                                        else if (name.includes('pendente')) fillColor = '#f59e0b'; // Amber
+                                        else if (name.includes('devolvido')) fillColor = '#64748b'; // Slate
+                                        else if (name.includes('retirado')) fillColor = '#8884d8'; // Purple from trend chart
+
+                                        return <Cell key={`cell-${index}`} fill={fillColor} strokeWidth={0} />;
+                                    })}
                                 </Pie>
-                                <Tooltip />
-                                <Legend formatter={(value, entry: any) => {
-                                    const { payload } = entry;
-                                    return `${value} (${payload.value})`;
-                                }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+                                />
+                                <Legend
+                                    verticalAlign="bottom"
+                                    height={36}
+                                    iconType="circle"
+                                    formatter={(value, entry: any) => (
+                                        <span className="text-slate-600 text-xs font-medium ml-1">{value} ({entry.payload.value})</span>
+                                    )}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
