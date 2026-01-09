@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useTransition } from 'react';
 
-import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart } from 'lucide-react';
-import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
+import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart, Clock } from 'lucide-react';
+import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, UserStatus, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
 import { StatusBadge } from './components/StatusBadge';
 import { AnalyticsView } from './components/AnalyticsView';
 import { DeliveryForm } from './components/DeliveryForm';
@@ -170,7 +170,8 @@ export default function App() {
           username: data.username,
           role: data.role as UserRole,
           company: data.company,
-          company_id: data.company_id
+          company_id: data.company_id,
+          status: data.status
         });
         setShowDashboard(data.role !== UserRole.VIEWER);
       }
@@ -430,6 +431,32 @@ export default function App() {
       onLoginSuccess={() => { }} // Session listener handles the state update
     />
   );
+
+  // Block pending users
+  if (currentUser.status === UserStatus.PENDING) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center border border-slate-100">
+          <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-3">Cadastro em Análise</h2>
+          <p className="text-slate-600 mb-8 leading-relaxed">
+            Seu cadastro foi recebido com sucesso e está aguardando aprovação do administrador.
+            <br />
+            Você receberá um e-mail assim que seu acesso for liberado.
+          </p>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center justify-center gap-2 mx-auto"
+          >
+            <LogOut size={16} />
+            Sair e tentar novamente mais tarde
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
