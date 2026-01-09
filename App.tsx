@@ -86,6 +86,7 @@ export default function App() {
 
   const [showDashboard, setShowDashboard] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [showReportsModal, setShowReportsModal] = useState(false);
 
   // REMOVED LocalStorage Sync Effect
@@ -303,6 +304,84 @@ export default function App() {
     }
   };
 
+  const handleUpdateAdminStatus = async (id: string, newStatus: AdminStatus) => {
+    const item = deliveries.find(d => d.id === id);
+    if (!item) return;
+    const updated = { ...item, adminStatus: newStatus };
+
+    setDeliveries(prev => prev.map(d => d.id === id ? updated : d));
+    try {
+      await dataService.updateDelivery(updated);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar status administrativo.');
+      setDeliveries(prev => prev.map(d => d.id === id ? item : d));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(new Set(paginatedDeliveries.map(d => d.id)));
+    } else {
+      setSelectedItems(new Set());
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedItems);
+    if (checked) newSelected.add(id);
+    else newSelected.delete(id);
+    setSelectedItems(newSelected);
+  };
+
+  const handleBulkStatusUpdate = async (newStatus: DeliveryStatus) => {
+    if (!currentUser?.company_id) return;
+    setSaveStatus('saving');
+    const itemsToUpdate = deliveries.filter(d => selectedItems.has(d.id));
+
+    try {
+      const promises = itemsToUpdate.map(item => {
+        const updated = { ...item, status: newStatus };
+        return dataService.updateDelivery(updated);
+      });
+
+      await Promise.all(promises);
+
+      setDeliveries(prev => prev.map(d => selectedItems.has(d.id) ? { ...d, status: newStatus } : d));
+      setSelectedItems(new Set());
+      alert('Status atualizado com sucesso!');
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar status em lote.');
+    } finally {
+      setSaveStatus('saved');
+    }
+  };
+
+  const handleBulkAdminStatusUpdate = async (newStatus: AdminStatus) => {
+    if (!currentUser?.company_id || !isAdmin) return;
+    setSaveStatus('saving');
+    const itemsToUpdate = deliveries.filter(d => selectedItems.has(d.id));
+
+    try {
+      const promises = itemsToUpdate.map(item => {
+        const updated = { ...item, adminStatus: newStatus };
+        return dataService.updateDelivery(updated);
+      });
+
+      await Promise.all(promises);
+
+      setDeliveries(prev => prev.map(d => selectedItems.has(d.id) ? { ...d, adminStatus: newStatus } : d));
+      setSelectedItems(new Set());
+      alert('Status administrativo atualizado com sucesso!');
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar status administrativo em lote.');
+    } finally {
+      setSaveStatus('saved');
+    }
+  };
+
   const handleUpdateDeliveryDate = async (id: string, newDate: string) => {
     const item = deliveries.find(d => d.id === id);
     if (!item) return;
@@ -318,20 +397,7 @@ export default function App() {
     }
   };
 
-  const handleUpdateAdminStatus = async (id: string, newStatus: AdminStatus) => {
-    const item = deliveries.find(d => d.id === id);
-    if (!item) return;
-    const updated = { ...item, adminStatus: newStatus };
 
-    setDeliveries(prev => prev.map(d => d.id === id ? updated : d));
-    try {
-      await dataService.updateDelivery(updated);
-    } catch (error) {
-      console.error(error);
-      alert('Erro ao atualizar status admin.');
-      setDeliveries(prev => prev.map(d => d.id === id ? item : d));
-    }
-  };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Excluir este registro permanentemente?')) {
@@ -659,17 +725,61 @@ export default function App() {
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    {/* BULK ACTIONS BAR */}
+                    {selectedItems.size > 0 && (
+                      <div className="bg-blue-50 px-4 py-2 border-b border-blue-100 flex items-center justify-between animate-in slide-in-from-top-2">
+                        <div className="flex items-center gap-2 text-sm text-blue-800">
+                          <span className="font-bold">{selectedItems.size}</span> itens selecionados
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select
+                            className="text-xs border-blue-200 rounded-lg px-2 py-1.5 focus:ring-blue-500 bg-white"
+                            onChange={(e) => {
+                              if (e.target.value) handleBulkStatusUpdate(e.target.value as DeliveryStatus);
+                            }}
+                            defaultValue=""
+                          >
+                            <option value="" disabled>Alterar Status Entrega...</option>
+                            {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+
+                          {isAdmin && (
+                            <select
+                              className="text-xs border-blue-200 rounded-lg px-2 py-1.5 focus:ring-blue-500 bg-white"
+                              onChange={(e) => {
+                                if (e.target.value) handleBulkAdminStatusUpdate(e.target.value as AdminStatus);
+                              }}
+                              defaultValue=""
+                            >
+                              <option value="" disabled>Alterar Finalização...</option>
+                              {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                          )}
+
+                          <button onClick={() => setSelectedItems(new Set())} className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2">Cancelar</button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-sm">
                         <thead className="bg-slate-50 border-b">
                           <tr>
-                            <th className="px-4 py-3 font-bold text-slate-800">Nota Fiscal</th>
-                            <th className="px-4 py-3 font-bold text-slate-800">Emissão</th>
-                            <th className="px-4 py-3 font-bold text-slate-800">Status</th>
-                            <th className="px-4 py-3 font-bold text-slate-800 w-36">Data Entrega</th>
-                            <th className="px-4 py-3 font-bold text-slate-800">Técnico</th>
-                            <th className="px-4 py-3 font-bold text-slate-800">Finalização</th>
-                            <th className="px-4 py-3 font-bold text-slate-800 text-right">Ações</th>
+                            <th className="px-4 py-3 w-8 text-center">
+                              <input
+                                type="checkbox"
+                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                checked={paginatedDeliveries.length > 0 && paginatedDeliveries.every(d => selectedItems.has(d.id))}
+                                onChange={(e) => handleSelectAll(e.target.checked)}
+                              />
+                            </th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-center">Nota Fiscal</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-center">Emissão</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-center">Status</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 w-36 text-center">Data Entrega</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-center">Técnico</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-center">Finalização</th>
+                            <th className="px-4 py-3 font-bold text-slate-800 text-center">Ações</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -679,20 +789,30 @@ export default function App() {
                             const isReadOnly = !canEdit;
 
                             return (
-                              <tr key={item.id} className="hover:bg-slate-50">
-                                <td className="px-4 py-3 font-bold text-slate-900">{item.invoiceNumber}</td>
-                                <td className="px-4 py-3 text-slate-500">{formatDate(item.issueDate)}</td>
-                                <td className="px-4 py-3">
-                                  <select
-                                    disabled={isLocked || isReadOnly}
-                                    value={item.status}
-                                    onChange={(e) => handleUpdateStatus(item.id, e.target.value as DeliveryStatus)}
-                                    className={`w-full max-w-[140px] px-2 py-1 text-xs border rounded-full font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 ${getStatusColorClass(item.status)} ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                  >
-                                    {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                                  </select>
+                              <tr key={item.id} className={`hover:bg-slate-50 ${selectedItems.has(item.id) ? 'bg-blue-50/50' : ''}`}>
+                                <td className="px-4 py-3 text-center">
+                                  <input
+                                    type="checkbox"
+                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    checked={selectedItems.has(item.id)}
+                                    onChange={(e) => handleSelectRow(item.id, e.target.checked)}
+                                  />
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 font-bold text-slate-900 text-center">{item.invoiceNumber}</td>
+                                <td className="px-4 py-3 text-slate-500 text-center">{formatDate(item.issueDate)}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <div className="flex justify-center">
+                                    <select
+                                      disabled={isLocked || isReadOnly}
+                                      value={item.status}
+                                      onChange={(e) => handleUpdateStatus(item.id, e.target.value as DeliveryStatus)}
+                                      className={`w-full max-w-[140px] px-2 py-1 text-xs border rounded-full font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 ${getStatusColorClass(item.status)} ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                    >
+                                      {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 text-center">
                                   <input
                                     type="date"
                                     disabled={isLocked || isReadOnly}
@@ -701,7 +821,7 @@ export default function App() {
                                     className={`w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 bg-white ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : ''}`}
                                   />
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-center">
                                   <select
                                     disabled={isLocked || isReadOnly}
                                     className={`w-full max-w-[180px] px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${isLocked ? 'bg-slate-100 opacity-60 cursor-not-allowed' : 'bg-white'}`}
@@ -712,7 +832,7 @@ export default function App() {
                                     {receivers.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                                   </select>
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-center">
                                   <select
                                     disabled={!isAdmin}
                                     className={`w-full max-w-[150px] px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 text-slate-700 cursor-pointer ${!isAdmin ? 'bg-slate-100 opacity-70 cursor-not-allowed' : 'bg-white'
@@ -723,8 +843,8 @@ export default function App() {
                                     {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
                                   </select>
                                 </td>
-                                <td className="px-4 py-3 text-right">
-                                  <div className="flex justify-end gap-3 font-medium">
+                                <td className="px-4 py-3 text-center">
+                                  <div className="flex justify-center gap-3 font-medium">
                                     {isLocked ? (
                                       <span className="text-slate-400 text-xs flex items-center gap-1 cursor-not-allowed" title="Finalizado pelo Administrador">
                                         <Lock size={12} />
@@ -737,7 +857,7 @@ export default function App() {
                                 </td>
                               </tr>
                             );
-                          }) : <tr><td colSpan={7} className="px-6 py-10 text-center text-slate-400 italic">Sem registros.</td></tr>}
+                          }) : <tr><td colSpan={8} className="px-6 py-10 text-center text-slate-400 italic">Sem registros.</td></tr>}
                         </tbody>
                       </table>
                     </div>
