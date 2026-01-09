@@ -12,6 +12,7 @@ interface LoginProps {
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
@@ -32,14 +33,13 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         if (username.length < 3) {
           throw new Error('Usuário muito curto.');
         }
+        if (!email.includes('@')) {
+          throw new Error('E-mail inválido.');
+        }
 
         // 1. Sign Up
-        const emailToRegister = username.includes('@')
-          ? username.toLowerCase().replace(/\s+/g, '')
-          : `${username.toLowerCase().replace(/\s+/g, '')}@temp.com`;
-
         const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: emailToRegister,
+          email: email,
           password: password,
         });
 
@@ -77,6 +77,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           .insert({
             id: authData.user.id,
             username: username,
+            email: email,
             company: normalizedCompany, // Keep literal for display cache if needed
             company_id: companyId,
             role: UserRole.VIEWER,
@@ -85,16 +86,27 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         if (profileError) throw profileError;
 
-        if (profileError) throw profileError;
-
         setRegistrationSuccess(true);
         // Do not auto-login
         // onLoginSuccess();
       } else {
         // Login
-        const emailToLogin = username.includes('@')
-          ? username.toLowerCase().replace(/\s+/g, '')
-          : `${username.toLowerCase().replace(/\s+/g, '')}@temp.com`;
+        let emailToLogin = username; // Default assume input is email or username to be resolved
+
+        // If input does NOT look like an email, try to resolve username to email
+        if (!username.includes('@')) {
+          const { data: resolvedEmail, error: lookupError } = await supabase.rpc('get_email_by_username_public', {
+            username_input: username
+          });
+
+          if (lookupError || !resolvedEmail) {
+            // Fallback to legacy temp email logic if strictly needed, or just fail.
+            // Legacy logic:
+            emailToLogin = `${username.toLowerCase().replace(/\s+/g, '')}@temp.com`;
+          } else {
+            emailToLogin = resolvedEmail;
+          }
+        }
 
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email: emailToLogin,
@@ -105,6 +117,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         // 3. Verify Company Association
         // Fetch profile to check if user belongs to the entered company
+        // Also fetch username to update the app state if needed (though App.tsx fetches profile again)
         const { data: profile } = await supabase
           .from('profiles')
           .select('company, company_id, status, companies(name)') // Join with companies to be sure
@@ -124,8 +137,17 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
           // Strict check: The entered company name must match the stored company name (or relation)
           // Using case-insensitive check for better UX
+          // ONLY CHECK IF username was provided (legacy behavior implies company check on login screen)
+          // If we want to strictly follow "User logs in with username OR email", the company field might be redundant 
+          // but the prompt says "username and company name in the top bar".
+          // The prompt doesn't say remove Company field from Login, but "name of user and company name" visible AFTER login.
+          // However, existing login asks for Company. 
+          // If the user logs in with Email, they might not expect to type Company? 
+          // But let's keep it consistent with existing flow: User + Password + Company.
+
           const storedCompany = profile.company || (profile.companies as any)?.name;
-          if (storedCompany && storedCompany.toLowerCase() !== company.trim().toLowerCase()) {
+          // If user provided company on login form, validate it.
+          if (company && storedCompany && storedCompany.toLowerCase() !== company.trim().toLowerCase()) {
             // If mismatch, sign out immediately
             await supabase.auth.signOut();
             throw new Error(`Este usuário não pertence à empresa "${company}". Pertence a: ${storedCompany}`);
@@ -135,6 +157,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         onLoginSuccess();
       }
     } catch (err: any) {
+      console.error(err);
       setError(err.message || 'Ocorreu um erro.');
     } finally {
       setLoading(false);
@@ -145,6 +168,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setIsRegistering(!isRegistering);
     setError('');
     setUsername('');
+    setEmail('');
     setPassword('');
     setCompany('');
     setConfirmPassword('');
@@ -249,15 +273,34 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   </div>
                 </div>
 
+                {isRegistering && (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">E-mail</label>
+                    <div className="relative group">
+                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
+                      <input
+                        type="email"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
+                        placeholder="seu@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Usuário</label>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">
+                    {isRegistering ? 'Usuário' : 'Usuário ou E-mail'}
+                  </label>
                   <div className="relative group">
                     <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
                     <input
                       type="text"
                       required
                       className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
-                      placeholder="Nome de usuário"
+                      placeholder={isRegistering ? "Nome de usuário" : "Usuário ou e-mail"}
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                     />

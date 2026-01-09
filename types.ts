@@ -97,4 +97,5 @@ export interface User {
   company?: string;
   company_id?: string;
   status?: UserStatus | string;
+  email?: string;
 }
