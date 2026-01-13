@@ -191,7 +191,7 @@ export default function App() {
   const isManager = currentUser?.role === UserRole.MANAGER;
   const isEditor = currentUser?.role === UserRole.EDITOR;
 
-  const canViewDashboard = isAdmin || isManager;
+  const canViewDashboard = isAdmin || isManager || isEditor;
   const canEdit = isAdmin || isEditor;
 
   const handleManualSave = () => {
@@ -593,7 +593,7 @@ export default function App() {
               <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
               <button onClick={() => startTransition(() => setActiveTab('pendencies'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
               <button onClick={() => startTransition(() => setActiveTab('commercial'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'commercial' ? 'bg-purple-50 text-purple-600' : 'text-slate-600'}`}>Comercial</button>
-              {isAdmin && <button onClick={() => startTransition(() => setActiveTab('dashboard'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Dashboard</button>}
+              {canViewDashboard && <button onClick={() => startTransition(() => setActiveTab('dashboard'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Dashboard</button>}
             </div>
           </div>
         )}
