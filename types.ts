@@ -79,6 +79,7 @@ export enum UserRole {
   ADMIN = "Administrador",
   MANAGER = "Gerente",
   EDITOR = "Editor",
+  COMMERCIAL = "Comercial",
   VIEWER = "Visualizador"
 }
 

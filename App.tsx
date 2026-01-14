@@ -190,8 +190,9 @@ export default function App() {
   const isAdmin = currentUser?.role === UserRole.ADMIN;
   const isManager = currentUser?.role === UserRole.MANAGER;
   const isEditor = currentUser?.role === UserRole.EDITOR;
+  const isCommercial = currentUser?.role === UserRole.COMMERCIAL;
 
-  const canViewDashboard = isAdmin || isManager || isEditor;
+  const canViewDashboard = isAdmin || isManager || isEditor || isCommercial;
   const canEdit = isAdmin || isEditor;
 
   const handleManualSave = () => {
