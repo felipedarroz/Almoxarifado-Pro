@@ -78,6 +78,7 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
     };
 
     const canEdit = userRole === UserRole.ADMIN || userRole === UserRole.EDITOR;
+    const canAdd = canEdit || userRole === UserRole.COMMERCIAL;
 
     const filteredDemands = demands.filter(d =>
         d.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -326,7 +327,7 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <input type="text" placeholder="Filtrar..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                     </div>
-                    {canEdit && <button onClick={() => { setEditingDemand(null); setFormData({ title: '', client_name: '', project_name: '', deadline: systemToday, items: '', priority: DemandPriority.MEDIUM, status: 'Pendente' }); setIsModalOpen(true); }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition-colors">+ Nova Demanda</button>}
+                    {canAdd && <button onClick={() => { setEditingDemand(null); setFormData({ title: '', client_name: '', project_name: '', deadline: systemToday, items: '', priority: DemandPriority.MEDIUM, status: 'Pendente' }); setIsModalOpen(true); }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition-colors">+ Nova Demanda</button>}
                 </div>
             </div>
 

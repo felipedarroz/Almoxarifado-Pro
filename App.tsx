@@ -473,21 +473,25 @@ export default function App() {
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
           <p className="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Menu Principal</p>
 
-          <button
-            onClick={() => startTransition(() => setActiveTab('deliveries'))}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries' ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
-          >
-            <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-400' : 'text-slate-500'} />
-            Entregas
-          </button>
+          {!isCommercial && (
+            <>
+              <button
+                onClick={() => startTransition(() => setActiveTab('deliveries'))}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries' ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+              >
+                <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-400' : 'text-slate-500'} />
+                Entregas
+              </button>
 
-          <button
-            onClick={() => startTransition(() => setActiveTab('pendencies'))}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'pendencies' ? 'bg-orange-600/10 text-orange-400 border border-orange-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
-          >
-            <ClipboardList size={18} className={activeTab === 'pendencies' ? 'text-orange-400' : 'text-slate-500'} />
-            Pendências
-          </button>
+              <button
+                onClick={() => startTransition(() => setActiveTab('pendencies'))}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'pendencies' ? 'bg-orange-600/10 text-orange-400 border border-orange-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+              >
+                <ClipboardList size={18} className={activeTab === 'pendencies' ? 'text-orange-400' : 'text-slate-500'} />
+                Pendências
+              </button>
+            </>
+          )}
 
           <button
             onClick={() => startTransition(() => setActiveTab('commercial'))}
@@ -591,8 +595,12 @@ export default function App() {
         {activeTab !== 'admin' && (
           <div className="md:hidden bg-white border-b border-slate-200 overflow-x-auto">
             <div className="flex space-x-1 p-2 min-w-max">
-              <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
-              <button onClick={() => startTransition(() => setActiveTab('pendencies'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
+              {!isCommercial && (
+                <>
+                  <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
+                  <button onClick={() => startTransition(() => setActiveTab('pendencies'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
+                </>
+              )}
               <button onClick={() => startTransition(() => setActiveTab('commercial'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'commercial' ? 'bg-purple-50 text-purple-600' : 'text-slate-600'}`}>Comercial</button>
               {canViewDashboard && <button onClick={() => startTransition(() => setActiveTab('dashboard'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Dashboard</button>}
             </div>
