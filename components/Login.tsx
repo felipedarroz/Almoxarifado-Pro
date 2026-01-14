@@ -26,6 +26,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
+      let authUser = null;
+      let isSignUp = isRegistering;
+
       if (isRegistering) {
         if (password !== confirmPassword) {
           throw new Error('As senhas não conferem.');
@@ -43,65 +46,49 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           password: password,
         });
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error("Erro ao criar usuário.");
+        if (authError) {
+          // Check if user already exists
+          if (authError.message.includes('already registered') || authError.status === 400 || authError.message.includes('User already registered')) {
+            // Attempt to sign in instead
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: email,
+              password: password,
+            });
 
-        // 2.a Handle Company (Find or Create)
-        let companyId: string;
-        const normalizedCompany = company.trim();
+            if (signInError) {
+              throw new Error('Usuário já cadastrado, mas a senha informada está incorreta.');
+            }
 
-        // Try to find existing company
-        const { data: existingCompany, error: findError } = await supabase
-          .from('companies')
-          .select('id')
-          .eq('name', normalizedCompany)
-          .single();
-
-        if (existingCompany) {
-          companyId = existingCompany.id;
+            authUser = signInData.user;
+            isSignUp = false; // Switch to login flow behavior for profile check
+          } else {
+            throw authError; // Rethrow other errors
+          }
         } else {
-          // Create new company if not exists
-          const { data: newCompany, error: createError } = await supabase
-            .from('companies')
-            .insert({ name: normalizedCompany })
-            .select('id')
-            .single();
-
-          if (createError) throw new Error("Erro ao registrar empresa: " + createError.message);
-          companyId = newCompany.id;
+          authUser = authData.user;
         }
 
-        // 2.b Insert Profile with Company ID
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            username: username,
-            email: email,
-            company: normalizedCompany, // Keep literal for display cache if needed
-            company_id: companyId,
-            role: UserRole.VIEWER,
-            status: UserStatus.PENDING
-          });
+        if (!authUser) throw new Error("Erro ao criar ou autenticar usuário.");
 
-        if (profileError) throw profileError;
+        await ensureProfileExists(authUser, company, username, email);
 
-        setRegistrationSuccess(true);
-        // Do not auto-login
-        // onLoginSuccess();
+        if (isSignUp) {
+          setRegistrationSuccess(true);
+        } else {
+          await checkUserStatusAndRedirect(authUser);
+        }
+
       } else {
-        // Login
-        let emailToLogin = username; // Default assume input is email or username to be resolved
+        // Login Flow
+        let emailToLogin = username;
 
-        // If input does NOT look like an email, try to resolve username to email
         if (!username.includes('@')) {
           const { data: resolvedEmail, error: lookupError } = await supabase.rpc('get_email_by_username_public', {
             username_input: username
           });
 
           if (lookupError || !resolvedEmail) {
-            // Fallback to legacy temp email logic if strictly needed, or just fail.
-            // Legacy logic:
+            // Fallback
             emailToLogin = `${username.toLowerCase().replace(/\s+/g, '')}@temp.com`;
           } else {
             emailToLogin = resolvedEmail;
@@ -114,54 +101,84 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         });
 
         if (error || !user) throw new Error('Usuário ou senha incorretos.');
+        authUser = user;
 
-        // 3. Verify Company Association
-        // Fetch profile to check if user belongs to the entered company
-        // Also fetch username to update the app state if needed (though App.tsx fetches profile again)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('company, company_id, status, companies(name)') // Join with companies to be sure
-          .eq('id', user.id)
-          .single();
-
-        if (profile) {
-          // Check Status
-          if (profile.status === UserStatus.PENDING) {
-            await supabase.auth.signOut();
-            throw new Error('Sua solicitação de acesso está em análise. Por favor, aguarde.');
-          }
-          if (profile.status === UserStatus.BLOCKED) {
-            await supabase.auth.signOut();
-            throw new Error('Acesso bloqueado. Contate o suporte.');
-          }
-
-          // Strict check: The entered company name must match the stored company name (or relation)
-          // Using case-insensitive check for better UX
-          // ONLY CHECK IF username was provided (legacy behavior implies company check on login screen)
-          // If we want to strictly follow "User logs in with username OR email", the company field might be redundant 
-          // but the prompt says "username and company name in the top bar".
-          // The prompt doesn't say remove Company field from Login, but "name of user and company name" visible AFTER login.
-          // However, existing login asks for Company. 
-          // If the user logs in with Email, they might not expect to type Company? 
-          // But let's keep it consistent with existing flow: User + Password + Company.
-
-          const storedCompany = profile.company || (profile.companies as any)?.name;
-          // If user provided company on login form, validate it.
-          if (company && storedCompany && storedCompany.toLowerCase() !== company.trim().toLowerCase()) {
-            // If mismatch, sign out immediately
-            await supabase.auth.signOut();
-            throw new Error(`Este usuário não pertence à empresa "${company}". Pertence a: ${storedCompany}`);
-          }
-        }
-
-        onLoginSuccess();
+        const effectiveUsername = username || user.email?.split('@')[0] || 'User';
+        await ensureProfileExists(authUser, company, effectiveUsername, user.email || '');
+        await checkUserStatusAndRedirect(authUser);
       }
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Ocorreu um erro.');
+      await supabase.auth.signOut();
     } finally {
       setLoading(false);
     }
+  };
+
+  const ensureProfileExists = async (user: any, companyName: string, userName: string, userEmail: string) => {
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (existingProfile) {
+      return existingProfile;
+    }
+
+    const normalizedCompany = companyName.trim();
+    if (!normalizedCompany) return; // Cannot heal without company name
+
+    let companyId: string;
+    const { data: existingCompany } = await supabase.from('companies').select('id').eq('name', normalizedCompany).single();
+    if (existingCompany) companyId = existingCompany.id;
+    else {
+      const { data: newCompany, error: createError } = await supabase.from('companies').insert({ name: normalizedCompany }).select('id').single();
+      if (createError) throw new Error("Erro ao registrar empresa: " + createError.message);
+      companyId = newCompany.id;
+    }
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,
+        username: userName,
+        email: userEmail,
+        company: normalizedCompany,
+        company_id: companyId,
+        role: UserRole.VIEWER,
+        status: UserStatus.PENDING
+      });
+
+    if (profileError) throw profileError;
+    return { status: UserStatus.PENDING, company: normalizedCompany };
+  };
+
+  const checkUserStatusAndRedirect = async (user: any) => {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company, company_id, status, companies(name)')
+      .eq('id', user.id)
+      .single();
+
+    if (profile) {
+      if (profile.status === UserStatus.PENDING) {
+        await supabase.auth.signOut();
+        throw new Error('Sua solicitação de acesso está em análise. Por favor, aguarde.');
+      }
+      if (profile.status === UserStatus.BLOCKED) {
+        await supabase.auth.signOut();
+        throw new Error('Acesso bloqueado. Contate o suporte.');
+      }
+
+      const storedCompany = profile.company || (profile.companies as any)?.name;
+      if (company && storedCompany && storedCompany.toLowerCase() !== company.trim().toLowerCase()) {
+        await supabase.auth.signOut();
+        throw new Error(`Este usuário não pertence à empresa "${company}". Pertence a: ${storedCompany}`);
+      }
+    }
+    onLoginSuccess();
   };
 
   const toggleMode = () => {
