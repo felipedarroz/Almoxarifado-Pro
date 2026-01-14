@@ -498,9 +498,9 @@ export default function App() {
 
           <button
             onClick={() => startTransition(() => setActiveTab('calendar'))}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'calendar' ? 'bg-pink-600/10 text-pink-400 border border-pink-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'calendar' ? 'bg-teal-600/10 text-teal-400 border border-teal-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
           >
-            <CalendarRange size={18} className={activeTab === 'calendar' ? 'text-pink-400' : 'text-slate-500'} />
+            <CalendarRange size={18} className={activeTab === 'calendar' ? 'text-teal-400' : 'text-slate-500'} />
             Calendário
           </button>
 
@@ -605,7 +605,7 @@ export default function App() {
             activeTab === 'deliveries' ? 'bg-blue-50/80 border-b border-blue-100' :
               activeTab === 'pendencies' ? 'bg-orange-50/80 border-b border-orange-100' :
                 activeTab === 'commercial' ? 'bg-purple-50/80 border-b border-purple-100' :
-                  activeTab === 'calendar' ? 'bg-pink-50/80 border-b border-pink-100' :
+                  activeTab === 'calendar' ? 'bg-teal-50/80 border-b border-teal-100' :
                     activeTab === 'admin' ? 'bg-slate-200/80 border-b border-slate-300' :
                       'bg-slate-50/50'
           }`}>
@@ -615,7 +615,7 @@ export default function App() {
                 activeTab === 'deliveries' ? 'text-blue-900' :
                   activeTab === 'pendencies' ? 'text-orange-900' :
                     activeTab === 'commercial' ? 'text-purple-900' :
-                      activeTab === 'calendar' ? 'text-pink-900' :
+                      activeTab === 'calendar' ? 'text-teal-900' :
                         activeTab === 'admin' ? 'text-slate-900' :
                           'text-slate-800'
               }`}>
@@ -632,7 +632,7 @@ export default function App() {
                 activeTab === 'deliveries' ? 'text-blue-600/80' :
                   activeTab === 'pendencies' ? 'text-orange-600/80' :
                     activeTab === 'commercial' ? 'text-purple-600/80' :
-                      activeTab === 'calendar' ? 'text-pink-600/80' :
+                      activeTab === 'calendar' ? 'text-teal-600/80' :
                         activeTab === 'admin' ? 'text-slate-600/80' :
                           'text-slate-500'
               }`}>
