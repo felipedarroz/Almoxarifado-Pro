@@ -94,14 +94,14 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
 
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const hasTitle = createFormData.title || (createFormData.client_name && createFormData.project_name);
-        if (hasTitle && createFormData.deadline && createFormData.items) {
-            const finalTitle = createFormData.title || `${createFormData.client_name} - ${createFormData.project_name}`;
+        // Validation: needs client_name (which acts as title/obra), deadline, and items
+        if (createFormData.client_name && createFormData.deadline && createFormData.items) {
+            const finalTitle = createFormData.client_name; // Client name IS the Obra name now
             const newDemand: CommercialDemand = {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 title: finalTitle,
                 client_name: createFormData.client_name,
-                project_name: createFormData.project_name,
+                project_name: '', // Deprecated or same as client
                 requestDate: systemToday,
                 deadline: createFormData.deadline || systemToday,
                 items: createFormData.items || '',
