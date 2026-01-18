@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { CommercialDemand, DemandPriority, UserRole } from '../types';
-import { Plus, Search, Calendar, Briefcase, Trash2, CheckCircle2, Clock, X, Save, CheckSquare, Pencil, AlertCircle, Check, Square, ImageDown } from 'lucide-react';
+import { Plus, Search, Calendar, Briefcase, Trash2, CheckCircle2, Clock, X, Save, CheckSquare, Pencil, AlertCircle, Check, Square, ImageDown, LayoutList, FileText, User, Hash, MessageSquare } from 'lucide-react';
 import { formatDate } from '../utils';
 import html2canvas from 'html2canvas';
 import { EmailTemplateCard } from './EmailTemplateCard';
@@ -26,17 +26,24 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
     userRole,
     systemToday
 }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
+    const [selectedDemandId, setSelectedDemandId] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false); // For creating NEW demands only
     const [searchTerm, setSearchTerm] = useState('');
-    const [editingDemand, setEditingDemand] = useState<CommercialDemand | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     // Novo estado para controlar qual demanda será "fotografada"
     const [demandForImage, setDemandForImage] = useState<CommercialDemand | null>(null);
-    // Referência para o elemento escondido
     const imageTemplateRef = useRef<HTMLDivElement>(null);
 
-    const [formData, setFormData] = useState<Partial<CommercialDemand>>({
+    // Derived state
+    const selectedDemand = demands.find(d => d.id === selectedDemandId) || null;
+
+    // Form data for the DETAILED VIEW (Editing)
+    const [detailsFormData, setDetailsFormData] = useState<Partial<CommercialDemand>>({});
+
+    // Form data for the CREATE MODAL
+    const [createFormData, setCreateFormData] = useState<Partial<CommercialDemand>>({
         title: '',
         client_name: '',
         project_name: '',
@@ -46,26 +53,25 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
         status: 'Pendente'
     });
 
-    // NOVA FUNÇÃO: Gera a imagem e baixa
+    // Update details form when selected demand changes
+    useEffect(() => {
+        if (selectedDemand) {
+            setDetailsFormData({ ...selectedDemand });
+        }
+    }, [selectedDemand]);
+
     const handleGenerateImage = async (demand: CommercialDemand) => {
         setDemandForImage(demand);
-
         setTimeout(async () => {
             if (imageTemplateRef.current) {
                 try {
-                    const canvas = await html2canvas(imageTemplateRef.current, {
-                        scale: 2,
-                        backgroundColor: null,
-                    });
-
+                    const canvas = await html2canvas(imageTemplateRef.current, { scale: 2, backgroundColor: null });
                     const image = canvas.toDataURL("image/png");
                     const link = document.createElement('a');
                     link.href = image;
-                    // Usa project_name ou title para o nome do arquivo
                     const safeName = (demand.project_name || demand.title).replace(/[^a-z0-9]/gi, '_').toLowerCase();
                     link.download = `CONCLUIDO_${safeName}.png`;
                     link.click();
-
                     alert("Imagem gerada! Verifique seus downloads e anexe ao e-mail.");
                 } catch (error) {
                     console.error("Erro ao gerar imagem:", error);
@@ -82,61 +88,48 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
 
     const filteredDemands = demands.filter(d =>
         d.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.items.toLowerCase().includes(searchTerm.toLowerCase())
+        d.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        d.project_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const urgentDemands = filteredDemands.filter(d => d.priority === DemandPriority.URGENT);
-    const highDemands = filteredDemands.filter(d => d.priority === DemandPriority.HIGH);
-    const normalDemands = filteredDemands.filter(d => d.priority === DemandPriority.MEDIUM || d.priority === DemandPriority.LOW);
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Permite salvar se tiver título OU (cliente E projeto)
-        const hasTitle = formData.title || (formData.client_name && formData.project_name);
-
-        if (hasTitle && formData.deadline && formData.items) {
-            // Constrói o título se não estiver preenchido explicito (usado para compatibilidade)
-            const finalTitle = formData.title || `${formData.client_name} - ${formData.project_name}`;
-
-            const demandData = {
-                ...formData,
+        const hasTitle = createFormData.title || (createFormData.client_name && createFormData.project_name);
+        if (hasTitle && createFormData.deadline && createFormData.items) {
+            const finalTitle = createFormData.title || `${createFormData.client_name} - ${createFormData.project_name}`;
+            const newDemand: CommercialDemand = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 title: finalTitle,
-                client_name: formData.client_name,
-                project_name: formData.project_name
-            } as CommercialDemand;
-
-            if (editingDemand) {
-                onUpdateDemand({ ...editingDemand, ...demandData });
-            } else {
-                onAddDemand({
-                    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                    title: finalTitle,
-                    client_name: formData.client_name,
-                    project_name: formData.project_name,
-                    requestDate: systemToday,
-                    deadline: formData.deadline,
-                    items: formData.items,
-                    priority: formData.priority || DemandPriority.MEDIUM,
-                    status: 'Pendente'
-                });
-            }
+                client_name: createFormData.client_name,
+                project_name: createFormData.project_name,
+                requestDate: systemToday,
+                deadline: createFormData.deadline || systemToday,
+                items: createFormData.items || '',
+                priority: createFormData.priority || DemandPriority.MEDIUM,
+                status: 'Pendente',
+                salesperson_name: '',
+                project_code: '',
+                observations: ''
+            };
+            onAddDemand(newDemand);
             setIsModalOpen(false);
+            // Auto select and switch to details
+            setSelectedDemandId(newDemand.id);
+            setActiveTab('details');
         }
     };
 
-    const getPriorityStyles = (p: DemandPriority) => {
-        switch (p) {
-            case DemandPriority.URGENT: return 'bg-red-50 text-red-700 border-red-200';
-            case DemandPriority.HIGH: return 'bg-orange-50 text-orange-700 border-orange-200';
-            default: return 'bg-blue-50 text-blue-700 border-blue-200';
+    const handleUpdateDetails = () => {
+        if (selectedDemand && detailsFormData) {
+            onUpdateDemand({ ...selectedDemand, ...detailsFormData } as CommercialDemand);
+            alert('Alterações salvas com sucesso!');
         }
     };
 
-    // Helper to parse checklist items
     const parseChecklist = (text: string) => {
         return text.split('\n').filter(line => line.trim()).map(line => {
             const isChecked = line.trim().startsWith('[x]') || line.trim().startsWith('[X]');
-            const cleanText = line.replace(/^\[[xX ]\]\s*/, '').trim(); // Remove marker
+            const cleanText = line.replace(/^\[[xX ]\]\s*/, '').trim();
             return { text: cleanText, checked: isChecked, originalLine: line };
         });
     };
@@ -148,18 +141,12 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
         return Math.round((checked / items.length) * 100);
     };
 
-    const toggleItemCheck = (demand: CommercialDemand, index: number) => {
+    const toggleItemCheck = (demand: CommercialDemand, index: number, isDetailsView = false) => {
         if (!canEdit) return;
-
         const lines = demand.items.split('\n');
-        // We need to map the "visual" index back to the real line index since we filter empty lines
-        // Actually, let's just split and keep empty lines for index consistency or use a safer approach.
-        // Simpler: Split, iterate, keep track of "content line index".
-
         let contentCount = 0;
         const newLines = lines.map(line => {
             if (!line.trim()) return line;
-
             if (contentCount === index) {
                 const isChecked = line.trim().startsWith('[x]') || line.trim().startsWith('[X]');
                 const cleanText = line.replace(/^\[[xX ]\]\s*/, '').trim();
@@ -169,144 +156,322 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
             contentCount++;
             return line;
         });
+        const newItems = newLines.join('\n');
 
-        onUpdateDemand({ ...demand, items: newLines.join('\n') });
+        if (isDetailsView) {
+            setDetailsFormData(prev => ({ ...prev, items: newItems }));
+            // Also update immediately in background if it's the selected demand
+            onUpdateDemand({ ...demand, items: newItems });
+        } else {
+            onUpdateDemand({ ...demand, items: newItems });
+        }
     };
 
-    const renderCard = (item: CommercialDemand) => {
-        const isDeleting = deleteConfirmId === item.id;
-        const progress = calculateProgress(item.items);
-        const checklistItems = parseChecklist(item.items);
+    const getPriorityStyles = (p: DemandPriority) => {
+        switch (p) {
+            case DemandPriority.URGENT: return 'bg-red-50 text-red-700 border-red-200';
+            case DemandPriority.HIGH: return 'bg-orange-50 text-orange-700 border-orange-200';
+            default: return 'bg-blue-50 text-blue-700 border-blue-200';
+        }
+    };
+
+    // --- RENDERERS ---
+
+    const renderOverview = () => (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <input
+                            type="text"
+                            placeholder="Buscar por cliente, obra..."
+                            className="pl-9 pr-3 py-2 border rounded-lg text-sm bg-white w-64 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex gap-2">
+                    {canAdd && (
+                        <button
+                            onClick={() => {
+                                setCreateFormData({ title: '', client_name: '', project_name: '', deadline: systemToday, items: '', priority: DemandPriority.MEDIUM, status: 'Pendente' });
+                                setIsModalOpen(true);
+                            }}
+                            className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition-colors flex items-center gap-2"
+                        >
+                            <Plus size={16} /> Novo Projeto
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
+                        <tr>
+                            <th className="px-4 py-3 border-b text-center w-24">Prioridade</th>
+                            <th className="px-4 py-3 border-b text-center w-24">Status</th>
+                            <th className="px-4 py-3 border-b">Cliente</th>
+                            <th className="px-4 py-3 border-b">Vendedor</th>
+                            <th className="px-4 py-3 border-b text-center">Progresso</th>
+                            <th className="px-4 py-3 border-b">Prazo</th>
+                            <th className="px-4 py-3 border-b text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {filteredDemands.map(demand => {
+                            const progress = calculateProgress(demand.items);
+                            return (
+                                <tr
+                                    key={demand.id}
+                                    className={`hover:bg-slate-50 transition-colors cursor-pointer group ${selectedDemandId === demand.id ? 'bg-purple-50' : ''}`}
+                                    onClick={() => { setSelectedDemandId(demand.id); setActiveTab('details'); }}
+                                >
+                                    <td className="px-4 py-3 text-center align-middle">
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${getPriorityStyles(demand.priority)}`}>
+                                            {demand.priority}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center align-middle">
+                                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${demand.status === 'Concluído' ? 'bg-green-100 text-green-700' :
+                                            demand.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-slate-100 text-slate-500'
+                                            }`}>
+                                            {demand.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 font-medium text-slate-700 align-middle">
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold">{demand.client_name || demand.title}</span>
+                                            {demand.project_code && <span className="text-[10px] text-slate-400 font-mono">{demand.project_code}</span>}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-slate-600 align-middle text-sm">
+                                        {demand.salesperson_name || '-'}
+                                    </td>
+                                    <td className="px-4 py-3 align-middle">
+                                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden max-w-[100px] mx-auto">
+                                            <div className={`h-full ${progress === 100 ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${progress}%` }} />
+                                        </div>
+                                        <p className="text-[10px] text-center text-slate-400 mt-1">{progress}%</p>
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-slate-500 align-middle">
+                                        {formatDate(demand.deadline)}
+                                    </td>
+                                    <td className="px-4 py-3 text-right align-middle">
+                                        <div className="flex justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setSelectedDemandId(demand.id); setActiveTab('details'); }}
+                                                className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white border border-slate-200 rounded hover:bg-indigo-50"
+                                                title="Editar"
+                                            >
+                                                <Pencil size={14} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(demand.id); }}
+                                                className="p-1.5 text-slate-400 hover:text-red-600 bg-white border border-slate-200 rounded hover:bg-red-50"
+                                                title="Excluir"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                        {deleteConfirmId === demand.id && (
+                                            <div className="absolute right-10 mt-[-30px] bg-white shadow-xl border border-red-100 p-2 rounded-lg z-50 flex gap-2 animate-in slide-in-from-right-5 fade-in">
+                                                <button onClick={(e) => { e.stopPropagation(); onDeleteDemand(demand.id); setDeleteConfirmId(null); }} className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">Confirmar</button>
+                                                <button onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(null); }} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">Cancelar</button>
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            {filteredDemands.length === 0 && (
+                <div className="p-8 text-center text-slate-400">
+                    <p>Nenhuma demanda encontrada.</p>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderDetails = () => {
+        if (!selectedDemand) {
+            return (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+                    <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Search className="text-slate-300" size={32} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-700 mb-2">Nenhuma obra selecionada</h3>
+                    <p className="text-slate-500 mb-6">Selecione uma obra na aba "Visão Geral" para ver os detalhes.</p>
+                    <button onClick={() => setActiveTab('overview')} className="text-purple-600 font-bold hover:underline">Ir para Visão Geral</button>
+                </div>
+            );
+        }
+
+        const checklistItems = parseChecklist(detailsFormData.items || '');
+        const progress = calculateProgress(detailsFormData.items || '');
 
         return (
-            <div key={item.id} className={`relative bg-white rounded-xl shadow-sm border p-4 mb-4 transition-all hover:shadow-md ${item.status === 'Concluído' ? 'border-green-200 bg-green-50/20' : 'border-slate-200'}`}>
-                {/* OVERLAY DE CONFIRMAÇÃO DE EXCLUSÃO */}
-                {isDeleting && (
-                    <div className="absolute inset-0 bg-white/95 z-10 rounded-xl flex flex-col items-center justify-center p-4 text-center animate-in fade-in duration-200">
-                        <AlertCircle className="text-red-500 mb-2" size={24} />
-                        <p className="text-xs font-bold text-slate-800 mb-3">Excluir esta demanda?</p>
-                        <div className="flex gap-2 w-full">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(null); }}
-                                className="flex-1 py-1.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded-lg"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteDemand(item.id);
-                                    setDeleteConfirmId(null);
-                                }}
-                                className="flex-1 py-1.5 text-[10px] font-bold bg-red-600 text-white rounded-lg"
-                            >
-                                Confirmar
-                            </button>
-                        </div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-800">{detailsFormData.client_name || detailsFormData.title}</h2>
+                        <p className="text-xs text-slate-500">Detalhes e acompanhamento</p>
                     </div>
-                )}
-
-                <div className="flex justify-between items-start mb-2">
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border ${getPriorityStyles(item.priority)}`}>
-                        {item.priority}
-                    </span>
-                    <div className="flex gap-1">
-                        <button onClick={() => {
-                            const dateStr = item.deadline.replace(/-/g, '');
-                            window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Entrega: ' + item.title)}&dates=${dateStr}/${dateStr}&details=${encodeURIComponent(item.items)}`, '_blank');
-                        }} className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-50 rounded" title="Agenda"><Calendar size={16} /></button>
-
+                    <div className="flex gap-2">
                         {canEdit && (
-                            <>
-                                <button onClick={() => { setEditingDemand(item); setFormData({ ...item }); setIsModalOpen(true); }} className="p-1.5 text-slate-400 hover:text-indigo-600 bg-slate-50 rounded" title="Editar"><Pencil size={16} /></button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(item.id); }}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 bg-slate-50 rounded border border-transparent hover:border-red-100"
-                                    title="Excluir"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </>
+                            <button onClick={handleUpdateDetails} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                                <Save size={16} /> Salvar Alterações
+                            </button>
+                        )}
+                        {progress === 100 && (
+                            <button onClick={() => handleGenerateImage(selectedDemand)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-green-700 transition-colors flex items-center gap-2">
+                                <ImageDown size={16} /> Baixar Conclusão
+                            </button>
                         )}
                     </div>
                 </div>
 
-                <h4 className="font-bold text-slate-800 leading-tight mb-1">{item.title}</h4>
+                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* COLUNA 1: Informações do Cliente */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase text-slate-400 flex items-center gap-2 mb-2">
+                            <User size={14} /> Informações da Obra
+                        </h3>
 
-                <div className="mb-3">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
-                        <Clock size={12} />
-                        <span>Prazo: <strong>{formatDate(item.deadline)}</strong></span>
-                    </div>
-                    {item.completionDate && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-green-600 font-bold">
-                            <CheckSquare size={10} /> Disponível: {formatDate(item.completionDate)}
-                        </div>
-                    )}
-
-                    {/* Progress Bar */}
-                    {checklistItems.length > 0 && (
-                        <div className="mt-2 flex items-center gap-2">
-                            <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                <div
-                                    className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-green-500' : 'bg-blue-500'}`}
-                                    style={{ width: `${progress}%` }}
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Cliente (Nome da Obra)</label>
+                                <input
+                                    disabled={!canEdit}
+                                    type="text"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                    value={detailsFormData.client_name || ''}
+                                    onChange={e => setDetailsFormData({ ...detailsFormData, client_name: e.target.value })}
+                                    placeholder="Nome da Obra / Cliente"
                                 />
                             </div>
-                            <span className="text-[10px] font-bold text-slate-400">{progress}%</span>
-                        </div>
-                    )}
-                </div>
 
-                {/* Checklist View */}
-                {/* Checklist Table View */}
-                <div className="bg-slate-50 rounded border border-slate-100 mb-3 max-h-40 overflow-y-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-100 text-[10px] text-slate-500 font-bold uppercase sticky top-0">
-                            <tr>
-                                <th className="px-3 py-2 w-10 text-center">Status</th>
-                                <th className="px-3 py-2">Item / Peça</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-xs">
-                            {checklistItems.map((checkItem, idx) => (
-                                <tr
-                                    key={idx}
-                                    className={`border-b border-slate-100 last:border-0 transition-colors cursor-pointer group ${checkItem.checked ? 'bg-slate-50/50' : 'bg-white hover:bg-purple-50'}`}
-                                    onClick={() => toggleItemCheck(item, idx)}
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Código da Obra</label>
+                                <div className="relative">
+                                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3 h-3" />
+                                    <input
+                                        disabled={!canEdit}
+                                        type="text"
+                                        className="w-full pl-8 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50 disabled:text-slate-500 font-mono"
+                                        value={detailsFormData.project_code || ''}
+                                        onChange={e => setDetailsFormData({ ...detailsFormData, project_code: e.target.value })}
+                                        placeholder="EX: 2024-001"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Vendedor / Consultor</label>
+                                <input
+                                    disabled={!canEdit}
+                                    type="text"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                    value={detailsFormData.salesperson_name || ''}
+                                    onChange={e => setDetailsFormData({ ...detailsFormData, salesperson_name: e.target.value })}
+                                    placeholder="Quem atendeu"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Prazo de Entrega</label>
+                                <input
+                                    disabled={!canEdit}
+                                    type="date"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                    value={detailsFormData.deadline || ''}
+                                    onChange={e => setDetailsFormData({ ...detailsFormData, deadline: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Status</label>
+                                <select
+                                    disabled={!canEdit}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50 disabled:text-slate-500"
+                                    value={detailsFormData.status}
+                                    onChange={e => setDetailsFormData({ ...detailsFormData, status: e.target.value as any })}
                                 >
-                                    <td className="px-3 py-2 text-center align-middle">
-                                        <div className={`flex justify-center transition-colors ${checkItem.checked ? 'text-green-500' : 'text-slate-300 group-hover:text-purple-400'}`}>
-                                            {checkItem.checked ? <CheckCircle2 size={16} className="fill-green-100" /> : <Square size={16} />}
-                                        </div>
-                                    </td>
-                                    <td className={`px-3 py-2 align-middle ${checkItem.checked ? 'line-through text-slate-400 italic' : 'text-slate-700'}`}>
-                                        {checkItem.text}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    <option value="Pendente">Pendente</option>
+                                    <option value="Em Andamento">Em Andamento</option>
+                                    <option value="Concluído">Concluído</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.status === 'Concluído' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                        {item.status}
-                    </span>
-                    {canEdit && progress === 100 && item.status !== 'Concluído' && (
-                        <button
-                            onClick={() => handleGenerateImage(item)}
-                            title="Baixar Imagem de Conclusão para E-mail"
-                            className="flex items-center gap-1 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg shadow-sm transition-colors mr-2"
-                        >
-                            <ImageDown size={12} /> Gerar Imagem
-                        </button>
-                    )}
-                    {canEdit && item.status !== 'Concluído' && (
-                        <button onClick={() => onCompleteDemand(item.id, systemToday)} className="text-[10px] font-bold text-green-600 border border-green-200 px-3 py-1.5 rounded-lg bg-white hover:bg-green-50 shadow-sm transition-colors">
-                            Concluir
-                        </button>
-                    )}
+                    {/* COLUNA 2: Checklist */}
+                    <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 h-full flex flex-col">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-sm font-black uppercase text-slate-600 flex items-center gap-2">
+                                <CheckSquare size={14} /> Checklist
+                            </h3>
+                            <span className="text-xs font-bold text-slate-400">{progress}%</span>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden mb-4">
+                            <div className={`h-full transition-all duration-500 ${progress === 100 ? 'bg-green-500' : 'bg-purple-600'}`} style={{ width: `${progress}%` }} />
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+                            {checklistItems.map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    onClick={() => toggleItemCheck(selectedDemand, idx, true)}
+                                    className={`p-2 rounded-lg border transition-all cursor-pointer flex items-start gap-3 ${item.checked
+                                        ? 'bg-green-50 border-green-100'
+                                        : 'bg-white border-slate-200 hover:border-purple-300 hover:shadow-sm'
+                                        }`}
+                                >
+                                    <div className={`mt-0.5 ${item.checked ? 'text-green-500' : 'text-slate-300'}`}>
+                                        {item.checked ? <CheckCircle2 size={16} /> : <Square size={16} />}
+                                    </div>
+                                    <span className={`text-sm ${item.checked ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                        {item.text}
+                                    </span>
+                                </div>
+                            ))}
+                            {checklistItems.length === 0 && <p className="text-xs text-slate-400 italic text-center py-4">Nenhum item adicionado.</p>}
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-slate-200">
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Editar lista (Bruto)</label>
+                            <textarea
+                                disabled={!canEdit}
+                                className="w-full h-24 text-xs p-2 border rounded bg-white font-mono"
+                                value={detailsFormData.items}
+                                onChange={e => setDetailsFormData({ ...detailsFormData, items: e.target.value })}
+                                placeholder="Digite os itens, um por linha..."
+                            />
+                        </div>
+                    </div>
+
+                    {/* COLUNA 3: Observações */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-black uppercase text-slate-400 flex items-center gap-2 mb-2">
+                            <MessageSquare size={14} /> Observações
+                        </h3>
+                        <textarea
+                            disabled={!canEdit}
+                            className="w-full h-[calc(100%-2rem)] min-h-[300px] p-4 border rounded-xl text-sm leading-relaxed focus:ring-2 focus:ring-purple-500 disabled:bg-slate-50 disabled:text-slate-500 resize-none"
+                            value={detailsFormData.observations || ''}
+                            onChange={e => setDetailsFormData({ ...detailsFormData, observations: e.target.value })}
+                            placeholder="Adicione observações, notas ou comentários sobre esta obra..."
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -314,77 +479,78 @@ export const CommercialPanel: React.FC<CommercialPanelProps> = ({
 
     return (
         <div className="space-y-6">
-            {/* Template escondido para geração de imagem */}
+            {/* Hidden Templates */}
             <EmailTemplateCard ref={imageTemplateRef} demand={demandForImage} />
 
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <div>
-                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Briefcase className="text-purple-600" /> Comercial</h2>
-                    <p className="text-xs text-slate-500">Programação estratégica de obras.</p>
+            {/* Header & Tabs */}
+            <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200 pb-1">
+                <div className="flex gap-6">
+                    <button
+                        className={`pb-3 px-2 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'overview'
+                            ? 'border-purple-600 text-purple-600'
+                            : 'border-transparent text-slate-500 hover:text-purple-500 hover:border-purple-200'
+                            }`}
+                        onClick={() => setActiveTab('overview')}
+                    >
+                        <LayoutList size={18} /> Visão Geral
+                    </button>
+                    <button
+                        className={`pb-3 px-2 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'details'
+                            ? 'border-purple-600 text-purple-600'
+                            : 'border-transparent text-slate-500 hover:text-purple-500 hover:border-purple-200'
+                            }`}
+                        onClick={() => setActiveTab('details')}
+                    >
+                        <FileText size={18} /> Obras (Detalhes)
+                    </button>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-48">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input type="text" placeholder="Filtrar..." className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm bg-white" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+
+                {selectedDemand && activeTab === 'overview' && (
+                    <div className="text-xs text-slate-400 mb-3 animate-in fade-in">
+                        Última seleção: <strong>{selectedDemand.project_name || selectedDemand.title}</strong>
+                        <button onClick={() => setActiveTab('details')} className="ml-2 text-purple-600 underline">Ir para detalhes</button>
                     </div>
-                    {canAdd && <button onClick={() => { setEditingDemand(null); setFormData({ title: '', client_name: '', project_name: '', deadline: systemToday, items: '', priority: DemandPriority.MEDIUM, status: 'Pendente' }); setIsModalOpen(true); }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-purple-700 transition-colors">+ Nova Demanda</button>}
-                </div>
+                )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <h3 className="text-xs font-black uppercase tracking-tighter text-red-600 mb-4 bg-red-50 p-2 rounded border border-red-100 flex items-center justify-center gap-2">Urgentes <span className="bg-red-200 px-1.5 rounded-full">{urgentDemands.length}</span></h3>
-                    {urgentDemands.map(renderCard)}
-                    {urgentDemands.length === 0 && <p className="text-center text-xs text-slate-400 py-6 italic border border-dashed rounded-lg">Nenhuma urgência.</p>}
-                </div>
-                <div>
-                    <h3 className="text-xs font-black uppercase tracking-tighter text-orange-600 mb-4 bg-orange-50 p-2 rounded border border-orange-100 flex items-center justify-center gap-2">Alta Prioridade <span className="bg-orange-200 px-1.5 rounded-full">{highDemands.length}</span></h3>
-                    {highDemands.map(renderCard)}
-                    {highDemands.length === 0 && <p className="text-center text-xs text-slate-400 py-6 italic border border-dashed rounded-lg">Sem pendências altas.</p>}
-                </div>
-                <div>
-                    <h3 className="text-xs font-black uppercase tracking-tighter text-slate-600 mb-4 bg-slate-100 p-2 rounded border border-slate-200 flex items-center justify-center gap-2">Geral <span className="bg-slate-300 px-1.5 rounded-full">{normalDemands.length}</span></h3>
-                    {normalDemands.map(renderCard)}
-                    {normalDemands.length === 0 && <p className="text-center text-xs text-slate-400 py-6 italic border border-dashed rounded-lg">Sem demandas gerais.</p>}
-                </div>
+            {/* Content Area */}
+            <div className="animate-in fade-in zoom-in-95 duration-200">
+                {activeTab === 'overview' ? renderOverview() : renderDetails()}
             </div>
 
+            {/* CREATE MODAL */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200">
                         <div className="p-4 border-b bg-purple-50 flex justify-between items-center">
-                            <h2 className="font-bold text-purple-900">{editingDemand ? 'Editar Demanda' : 'Nova Demanda'}</h2>
+                            <h2 className="font-bold text-purple-900">Novo Projeto</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-purple-400 hover:text-purple-600"><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Cliente</label>
-                                    <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.client_name || ''} onChange={e => setFormData({ ...formData, client_name: e.target.value })} placeholder="Nome do Cliente" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Obra / Projeto</label>
-                                    <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.project_name || ''} onChange={e => setFormData({ ...formData, project_name: e.target.value })} placeholder="Identificação da Obra" />
+                                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Cliente (Nome da Obra)</label>
+                                    <input type="text" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={createFormData.client_name || ''} onChange={e => setCreateFormData({ ...createFormData, client_name: e.target.value })} placeholder="Nome da Obra / Cliente" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Prazo</label>
-                                    <input type="date" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.deadline} onChange={e => setFormData({ ...formData, deadline: e.target.value })} />
+                                    <input type="date" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={createFormData.deadline} onChange={e => setCreateFormData({ ...createFormData, deadline: e.target.value })} />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Prioridade</label>
-                                    <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value as DemandPriority })}>
+                                    <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" value={createFormData.priority} onChange={e => setCreateFormData({ ...createFormData, priority: e.target.value as DemandPriority })}>
                                         {Object.values(DemandPriority).map(p => <option key={p} value={p}>{p}</option>)}
                                     </select>
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Peças Necessárias</label>
-                                <p className="text-[10px] text-slate-400 mb-1">Use linhas separadas para cada item. Itens marcados começarão com [x].</p>
-                                <textarea required placeholder="PI-0030 - 20 unidades..." className="w-full h-32 px-3 py-2 border rounded-lg font-mono text-xs focus:ring-2 focus:ring-purple-500" value={formData.items} onChange={e => setFormData({ ...formData, items: e.target.value })} />
+                                <p className="text-[10px] text-slate-400 mb-1">Use linhas separadas para cada item.</p>
+                                <textarea required placeholder="PI-0030 - 20 unidades..." className="w-full h-32 px-3 py-2 border rounded-lg font-mono text-xs focus:ring-2 focus:ring-purple-500" value={createFormData.items} onChange={e => setCreateFormData({ ...createFormData, items: e.target.value })} />
                             </div>
-                            <button type="submit" className="w-full bg-purple-600 text-white py-2.5 rounded-lg font-bold hover:bg-purple-700 shadow-md">Salvar Demanda</button>
+                            <button type="submit" className="w-full bg-purple-600 text-white py-2.5 rounded-lg font-bold hover:bg-purple-700 shadow-md">Criar Projeto</button>
                         </form>
                     </div>
                 </div>

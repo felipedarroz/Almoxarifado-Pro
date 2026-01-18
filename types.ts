@@ -52,6 +52,9 @@ export interface CommercialDemand {
   title: string; // Ex: Obra Granja Viana
   client_name?: string; // Novo campo
   project_name?: string; // Novo campo
+  salesperson_name?: string; // Nome do vendedor/consultor
+  project_code?: string; // Código da obra
+  observations?: string; // Observações e comentários
   requestDate: string; // Data do pedido
   deadline: string; // Data limite (Prazo esperado pelo comercial)
   completionDate?: string; // Data em que os materiais ficaram disponíveis (Realizado)

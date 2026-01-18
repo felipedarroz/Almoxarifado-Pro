@@ -32,6 +32,11 @@ const mapPendencyToApp = (data: any): ProviderPendency => ({
 const mapDemandToApp = (data: any): CommercialDemand => ({
     id: data.id,
     title: data.title,
+    client_name: data.client_name,
+    project_name: data.project_name,
+    salesperson_name: data.salesperson_name,
+    project_code: data.project_code,
+    observations: data.observations,
     requestDate: data.request_date,
     deadline: data.deadline,
     completionDate: data.completion_date,
@@ -205,6 +210,11 @@ export const dataService = {
     async createDemand(item: Omit<CommercialDemand, 'id'>, companyId: string) {
         const payload = {
             title: item.title,
+            client_name: item.client_name,
+            project_name: item.project_name,
+            salesperson_name: item.salesperson_name,
+            project_code: item.project_code,
+            observations: item.observations,
             request_date: item.requestDate,
             deadline: item.deadline,
             completion_date: item.completionDate,
@@ -227,6 +237,11 @@ export const dataService = {
     async updateDemand(item: CommercialDemand) {
         const payload = {
             title: item.title,
+            client_name: item.client_name,
+            project_name: item.project_name,
+            salesperson_name: item.salesperson_name,
+            project_code: item.project_code,
+            observations: item.observations,
             request_date: item.requestDate,
             deadline: item.deadline,
             completion_date: item.completionDate,
