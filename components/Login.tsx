@@ -496,15 +496,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               </p>
             </div>
 
-            {!isRegistering && !isResettingPassword && (
-              <div className="mt-8 pt-6 border-t border-slate-100">
-                <p className="text-[10px] text-center text-slate-400 font-medium mb-2 uppercase tracking-wide">Acesso Rápido (Demo)</p>
-                <div className="flex flex-wrap justify-center gap-2 text-[10px] text-slate-500">
-                  <span className="bg-slate-100 px-2 py-1 rounded border border-slate-200">admin / 1234</span>
-                  <span className="bg-slate-100 px-2 py-1 rounded border border-slate-200">editor / 1234</span>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
