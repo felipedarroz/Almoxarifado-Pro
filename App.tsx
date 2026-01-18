@@ -509,6 +509,14 @@ export default function App() {
             Calendário
           </button>
 
+          <button
+            onClick={() => alert('Módulo de Estoque: Em desenvolvimento!\nEste recurso estará disponível em breve.')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all duration-200"
+          >
+            <Package size={18} className="text-slate-500" />
+            Estoque
+          </button>
+
           {canViewDashboard && (
             <>
               <div className="pt-4 pb-2">
