@@ -237,7 +237,11 @@ export default function App() {
       const matchAdminStatus = filters.adminStatus ? item.adminStatus === filters.adminStatus : true;
       const matchStart = filters.startDate ? item.issueDate >= filters.startDate : true;
       const matchEnd = filters.endDate ? item.issueDate <= filters.endDate : true;
-      return matchInvoice && matchStatus && matchStart && matchEnd && matchAdminStatus;
+
+      // Sanity check: exclude rows that look like headers
+      const isHeaderRow = ['nota fiscal', 'nf', 'invoice', 'emissão', 'status'].includes(item.invoiceNumber.toLowerCase());
+
+      return matchInvoice && matchStatus && matchStart && matchEnd && matchAdminStatus && !isHeaderRow;
     }).sort((a, b) => {
       // 1. Sort by Date Descending
       if (a.issueDate > b.issueDate) return -1;

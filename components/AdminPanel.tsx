@@ -70,7 +70,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           receiverName: '',
           observations: ''
         };
-      }).filter(i => i.invoiceNumber !== 'UNKNOWN' && i.invoiceNumber !== 'undefined');
+      }).filter(i => {
+        const invalidValues = ['UNKNOWN', 'undefined', 'nota fiscal', 'nf', 'invoice', 'nota', 'emissão', 'status'];
+        return !invalidValues.includes(i.invoiceNumber.toLowerCase());
+      });
 
       if (newItems.length > 0) {
         onImportData(newItems);
