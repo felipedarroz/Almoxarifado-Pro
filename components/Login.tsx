@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-import { Package, Lock, User as UserIcon, Key, ArrowRight, UserPlus, AlertCircle, Building2 } from 'lucide-react';
+import { Package, Lock, User as UserIcon, Key, ArrowRight, UserPlus, AlertCircle, Building2, CheckCircle2 } from 'lucide-react';
 import { User, UserRole, UserStatus } from '../types';
 import { supabase } from '../services/supabaseClient';
 
@@ -192,6 +192,72 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setRegistrationSuccess(false);
   };
 
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+
+  // ... (inside the component body)
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (!email || !email.includes('@')) {
+        throw new Error('Digite um e-mail válido.');
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin, // Redirects back to the app to set new password
+      });
+
+      if (error) throw error;
+      setResetSuccess(true);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Erro ao enviar e-mail de recuperação.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleResetMode = () => {
+    setIsResettingPassword(!isResettingPassword);
+    setError('');
+    setEmail('');
+    setResetSuccess(false);
+    setIsRegistering(false); // Ensure we are not in register mode
+  };
+
+  // Custom View for Reset Success
+  if (resetSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 -left-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md p-8 relative z-10 text-center animate-in fade-in zoom-in duration-300">
+          <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">E-mail Enviado!</h2>
+          <p className="text-slate-600 mb-6">
+            Verifique sua caixa de entrada (e spam). Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.
+          </p>
+          <button
+            onClick={() => { setResetSuccess(false); setIsResettingPassword(false); }}
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all"
+          >
+            Voltar para Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (registrationSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 relative overflow-hidden">
@@ -234,6 +300,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row z-10 min-h-[500px]">
 
         {/* Lado Esquerdo (Info) */}
+
+
+        {/* Lado Esquerdo (Info) */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 md:w-5/12 text-white flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
             <div className="flex flex-col mb-8">
@@ -262,100 +331,120 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         <div className="p-8 md:w-7/12 flex flex-col justify-center bg-white relative">
           <div className="max-w-md mx-auto w-full">
             <h2 className="text-2xl font-bold text-slate-800 mb-1">
-              {isRegistering ? 'Criar Conta' : 'Bem-vindo de volta'}
+              {isResettingPassword ? 'Recuperar Senha' : (isRegistering ? 'Criar Conta' : 'Bem-vindo de volta')}
             </h2>
             <p className="text-sm text-slate-500 mb-6">
-              {isRegistering ? 'Preencha os dados para começar.' : 'Insira suas credenciais para acessar.'}
+              {isResettingPassword
+                ? 'Digite seu e-mail para receber o link de redefinição.'
+                : (isRegistering ? 'Preencha os dados para começar.' : 'Insira suas credenciais para acessar.')}
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={isResettingPassword ? handlePasswordReset : handleSubmit} className="space-y-4">
               {error && (
                 <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 flex items-center gap-2 animate-in slide-in-from-top-2">
                   <AlertCircle size={16} /> {error}
                 </div>
               )}
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Empresa</label>
-                  <div className="relative group">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                    <input
-                      type="text"
-                      className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
-                      placeholder="Nome da empresa"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {isRegistering && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">E-mail</label>
-                    <div className="relative group">
-                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                      <input
-                        type="email"
-                        required
-                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
-                        placeholder="seu@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">
-                    {isRegistering ? 'Usuário' : 'Usuário ou E-mail'}
-                  </label>
+              {isResettingPassword ? (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">E-mail</label>
                   <div className="relative group">
                     <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
                     <input
-                      type="text"
+                      type="email"
                       required
                       className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
-                      placeholder={isRegistering ? "Nome de usuário" : "Usuário ou e-mail"}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Senha</label>
-                  <div className="relative group">
-                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
-                    <input
-                      type="password"
-                      required
-                      className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {isRegistering && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Confirmar Senha</label>
+              ) : (
+                <div className="space-y-4">
+                  {/* EMPRESA INPUT */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Empresa</label>
                     <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
+                      <input
+                        type="text"
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
+                        placeholder="Nome da empresa"
+                        value={company}
+                        onChange={(e) => setCompany(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {isRegistering && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">E-mail</label>
+                      <div className="relative group">
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
+                        <input
+                          type="email"
+                          required
+                          className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">
+                      {isRegistering ? 'Usuário' : 'Usuário ou E-mail'}
+                    </label>
+                    <div className="relative group">
+                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
+                      <input
+                        type="text"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
+                        placeholder={isRegistering ? "Nome de usuário" : "Usuário ou e-mail"}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Senha</label>
+                    <div className="relative group">
+                      <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
                       <input
                         type="password"
                         required
                         className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
                         placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {isRegistering && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label className="block text-xs font-bold text-slate-600 uppercase mb-1 ml-1">Confirmar Senha</label>
+                      <div className="relative group">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors w-5 h-5" />
+                        <input
+                          type="password"
+                          required
+                          className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50 focus:bg-white text-slate-900 outline-none"
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -363,32 +452,51 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Carregando...' : (
-                  isRegistering ? (
-                    <>
-                      Criar Conta <UserPlus size={18} />
-                    </>
-                  ) : (
-                    <>
-                      Acessar Sistema <ArrowRight size={18} />
-                    </>
+                  isResettingPassword ? 'Enviar Link de Recuperação' : (
+                    isRegistering ? (
+                      <>
+                        Criar Conta <UserPlus size={18} />
+                      </>
+                    ) : (
+                      <>
+                        Acessar Sistema <ArrowRight size={18} />
+                      </>
+                    )
                   )
                 )}
               </button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-slate-500">
-                {isRegistering ? 'Já tem uma conta?' : 'Não tem acesso?'}
+            <div className="mt-6 text-center space-y-2">
+              {/* Forget Password Link */}
+              {!isRegistering && !isResettingPassword && (
                 <button
-                  onClick={toggleMode}
+                  type="button"
+                  onClick={toggleResetMode}
+                  className="text-xs text-slate-400 hover:text-purple-600 font-medium transition-colors mb-2 block w-full"
+                >
+                  Esqueci minha senha
+                </button>
+              )}
+
+              <p className="text-sm text-slate-500">
+                {isResettingPassword
+                  ? 'Lembrou sua senha?'
+                  : (isRegistering ? 'Já tem uma conta?' : 'Não tem acesso?')
+                }
+                <button
+                  onClick={isResettingPassword ? toggleResetMode : toggleMode}
                   className="ml-1 font-bold text-blue-600 hover:text-blue-800 transition-colors hover:underline"
                 >
-                  {isRegistering ? 'Fazer Login' : 'Criar Conta'}
+                  {isResettingPassword
+                    ? 'Voltar para Login'
+                    : (isRegistering ? 'Fazer Login' : 'Criar Conta')
+                  }
                 </button>
               </p>
             </div>
 
-            {!isRegistering && (
+            {!isRegistering && !isResettingPassword && (
               <div className="mt-8 pt-6 border-t border-slate-100">
                 <p className="text-[10px] text-center text-slate-400 font-medium mb-2 uppercase tracking-wide">Acesso Rápido (Demo)</p>
                 <div className="flex flex-wrap justify-center gap-2 text-[10px] text-slate-500">
@@ -400,14 +508,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
       </div>
-
-      {/* Footer Info */}
-      <div className="absolute bottom-4 text-center w-full z-10 text-slate-500 text-xs opacity-60">
-        &copy; {new Date().getFullYear()} PRUMO Gestor de Processos. Todos os direitos reservados.
-      </div>
-
-      {/* Helper icon for errors */}
-      {/* Keep existing AlertCircle import */}
+      {/* ... existing footer ... */}
     </div>
   );
 };
