@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useTransition } from 'react';
 
-import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart, Clock } from 'lucide-react';
+import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart, Clock, ScrollText } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, UserStatus, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
 import { StatusBadge } from './components/StatusBadge';
 import { AnalyticsView } from './components/AnalyticsView';
@@ -479,8 +479,8 @@ export default function App() {
                 onClick={() => startTransition(() => setActiveTab('deliveries'))}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'deliveries' ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-sm' : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'}`}
               >
-                <Truck size={18} className={activeTab === 'deliveries' ? 'text-blue-400' : 'text-slate-500'} />
-                Entregas
+                <ScrollText size={18} className={activeTab === 'deliveries' ? 'text-blue-400' : 'text-slate-500'} />
+                Notas Fiscais
               </button>
 
               <button
@@ -605,7 +605,7 @@ export default function App() {
             <div className="flex space-x-1 p-2 min-w-max">
               {!isCommercial && (
                 <>
-                  <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Entregas</button>
+                  <button onClick={() => startTransition(() => setActiveTab('deliveries'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'deliveries' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}>Notas Fiscais</button>
                   <button onClick={() => startTransition(() => setActiveTab('pendencies'))} className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'pendencies' ? 'bg-orange-50 text-orange-600' : 'text-slate-600'}`}>Pendências</button>
                 </>
               )}
@@ -638,7 +638,7 @@ export default function App() {
               }`}>
               {activeTab === 'dashboard' && 'Dashboard Gerencial'}
               {activeTab === 'analytics' && 'Análise de Dados'}
-              {activeTab === 'deliveries' && 'Controle de Entregas'}
+              {activeTab === 'deliveries' && 'Controle de Notas Fiscais'}
               {activeTab === 'pendencies' && 'Quadro de Pendências'}
               {activeTab === 'commercial' && 'Gestão Comercial'}
               {activeTab === 'calendar' && 'Calendário Operacional'}
