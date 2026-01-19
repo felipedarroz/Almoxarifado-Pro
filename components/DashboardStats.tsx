@@ -1,8 +1,9 @@
 
 import React, { useMemo, useState } from 'react';
 import { DeliveryItem, DeliveryStatus, CommercialDemand, ProviderPendency } from '../types';
-import { Clock, CheckCircle2, AlertTriangle, XCircle, FileText, AlertOctagon, Target, Briefcase, Package, ClipboardList, Settings2, Save } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, XCircle, FileText, AlertOctagon, Target, Briefcase, Package, ClipboardList, Settings2, Save, BarChart3 } from 'lucide-react';
 import { parseDate, getDaysDiff } from '../utils';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface DashboardStatsProps {
   items: DeliveryItem[];
@@ -267,67 +268,71 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           </div>
         </div>
 
-        {/* Sub-metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Awaiting Attendance */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Aguardando Atend.</span>
-              <CheckCircle2 size={14} className="text-emerald-200 group-hover:text-emerald-500 transition-colors" />
-            </div>
+        {/* Chart Row */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-4 animate-in fade-in duration-700">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-slate-700">{stats.awaitingAttendance}</span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{stats.awaitingPct}%</span>
-              </div>
-              <ProgressBar pct={stats.awaitingPct} colorClass="bg-emerald-500" />
+              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Performance de Entregas</h4>
+              <p className="text-xs text-slate-500">Distribuição por status operacionais</p>
             </div>
+            <BarChart3 size={20} className="text-slate-400" />
           </div>
 
-          {/* Full Returns */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-orange-700 uppercase tracking-wide">Dev. Totais</span>
-              <XCircle size={14} className="text-orange-200 group-hover:text-orange-500 transition-colors" />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-slate-700">{stats.fullReturns}</span>
-                <span className="text-xs font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">{stats.fullReturnPct}%</span>
-              </div>
-              <ProgressBar pct={stats.fullReturnPct} colorClass="bg-orange-500" />
-            </div>
-          </div>
-
-          {/* Partial Returns */}
-          {/* Partial Returns */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-yellow-700 uppercase tracking-wide">Dev. Parciais</span>
-              <AlertTriangle size={14} className="text-yellow-200 group-hover:text-yellow-500 transition-colors" />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-slate-700">{stats.partialReturns}</span>
-                <span className="text-xs font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded">{stats.partialReturnPct}%</span>
-              </div>
-              <ProgressBar pct={stats.partialReturnPct} colorClass="bg-yellow-500" />
-            </div>
-          </div>
-
-          {/* Not Retrieved */}
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-red-700 uppercase tracking-wide">Não Retirado</span>
-              <XCircle size={14} className="text-red-200 group-hover:text-red-500 transition-colors" />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-slate-700">{stats.notRetrievedCount}</span>
-                <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">{stats.notRetrievedPct}%</span>
-              </div>
-              <ProgressBar pct={stats.notRetrievedPct} colorClass="bg-red-500" />
-            </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { name: 'Aguardando', value: stats.awaitingAttendance, color: '#10b981', label: 'Aguardando Atend.' },
+                  { name: 'Dev. Total', value: stats.fullReturns, color: '#f97316', label: 'Dev. Totais' },
+                  { name: 'Dev. Parcial', value: stats.partialReturns, color: '#eab308', label: 'Dev. Parciais' },
+                  { name: 'Não Retirado', value: stats.notRetrievedCount, color: '#ef4444', label: 'Não Retirado' },
+                ]}
+                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#94a3b8', fontSize: 11 }}
+                />
+                <Tooltip
+                  cursor={{ fill: '#f8fafc' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 shadow-xl rounded-lg border border-slate-100">
+                          <p className="text-xs font-bold text-slate-500 mb-1">{data.label}</p>
+                          <p className="text-lg font-bold" style={{ color: data.color }}>
+                            {data.value} <span className="text-xs text-slate-400 font-normal">notas</span>
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={60}>
+                  {
+                    [
+                      { name: 'Aguardando', value: stats.awaitingAttendance, color: '#10b981' },
+                      { name: 'Dev. Total', value: stats.fullReturns, color: '#f97316' },
+                      { name: 'Dev. Parcial', value: stats.partialReturns, color: '#eab308' },
+                      { name: 'Não Retirado', value: stats.notRetrievedCount, color: '#ef4444' },
+                    ].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))
+                  }
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </section>
