@@ -90,6 +90,27 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
       ? ((resolvedPendencies / totalPendencies) * 100).toFixed(1)
       : '0';
 
+    // --- NOVA METRICA: INDICADOR MENSAL ---
+    const currentMonthIndex = today.getMonth();
+    const currentYear = today.getFullYear();
+    const monthNames = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
+    const currentMonthName = monthNames[currentMonthIndex];
+
+    let monthTotal = 0;
+    let monthDelivered = 0;
+
+    items.forEach(item => {
+      const issueDate = parseDate(item.issueDate);
+      if (issueDate && issueDate.getMonth() === currentMonthIndex && issueDate.getFullYear() === currentYear) {
+        monthTotal++;
+        if (item.status === DeliveryStatus.DELIVERED) {
+          monthDelivered++;
+        }
+      }
+    });
+
+    const monthPct = monthTotal > 0 ? ((monthDelivered / monthTotal) * 100).toFixed(0) : '0';
+
     return {
       // Notas
       total,
@@ -110,7 +131,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
       totalPendencies,
       resolvedPendencies,
       activePendencies,
-      pendencyResolutionPct
+      pendencyResolutionPct,
+      // Mensal
+      currentMonthName,
+      monthPct
     };
   }, [items, commercialDemands, pendencies, systemToday, criticalThreshold]);
 
@@ -140,7 +164,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
           <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wide">Indicadores de Notas</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {/* Total Issued */}
           <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-2">
@@ -216,6 +240,29 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
                 <span className="text-sm text-slate-500 ml-1">notas</span>
               </div>
               <AlertOctagon size={20} className="text-red-500 opacity-20" />
+            </div>
+          </div>
+
+          {/* New Indicator: Monthly Completion */}
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+
+            <div className="flex justify-between items-start mb-2 relative">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{stats.currentMonthName}</span>
+              <Target size={16} className="text-blue-400" />
+            </div>
+
+            <div className="relative">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold text-slate-800">{stats.monthPct}%</span>
+                <span className="text-xs text-slate-400 font-medium">concluído</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 rounded-full transition-all duration-1000"
+                  style={{ width: `${stats.monthPct}%` }}
+                ></div>
+              </div>
             </div>
           </div>
         </div>
