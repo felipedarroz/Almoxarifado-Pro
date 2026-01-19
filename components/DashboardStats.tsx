@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { DeliveryItem, DeliveryStatus, CommercialDemand, ProviderPendency } from '../types';
 import { Clock, CheckCircle2, AlertTriangle, XCircle, FileText, AlertOctagon, Target, Briefcase, Package, ClipboardList, Settings2, Save, BarChart3 } from 'lucide-react';
 import { parseDate, getDaysDiff } from '../utils';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 
 interface DashboardStatsProps {
   items: DeliveryItem[];
@@ -319,17 +319,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ items, commercia
                     return null;
                   }}
                 />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={60}>
-                  {
-                    [
-                      { name: 'Aguardando', value: stats.awaitingAttendance, color: '#10b981' },
-                      { name: 'Dev. Total', value: stats.fullReturns, color: '#f97316' },
-                      { name: 'Dev. Parcial', value: stats.partialReturns, color: '#eab308' },
-                      { name: 'Não Retirado', value: stats.notRetrievedCount, color: '#ef4444' },
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))
-                  }
+                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={60} fill="#2563eb">
+                  <LabelList dataKey="value" position="top" fill="#64748b" fontSize={12} fontWeight="bold" />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
