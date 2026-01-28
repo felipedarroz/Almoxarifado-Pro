@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useTransition } from 'react';
 
-import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart, Clock, ScrollText } from 'lucide-react';
+import { Package, Plus, Search, Filter, FileDown, Sparkles, LogOut, LayoutDashboard, Lock, Unlock, AlertCircle, ClipboardList, Truck, Briefcase, Save as SaveIcon, CheckCircle, X, Download, Upload as UploadIcon, BarChart3, ChevronLeft, ChevronRight, CalendarRange, FileText, PieChart, Clock, ScrollText, Inbox, Archive } from 'lucide-react';
 import { DeliveryItem, DeliveryStatus, DeliveryFilter, User, UserRole, UserStatus, AdminStatus, ProviderPendency, CommercialDemand, DemandPriority, Technician } from './types';
 import { StatusBadge } from './components/StatusBadge';
 import { AnalyticsView } from './components/AnalyticsView';
@@ -81,6 +81,8 @@ export default function App() {
   });
 
   // Pagination State
+  // Pagination State
+  const [deliveryView, setDeliveryView] = useState<'active' | 'finalized'>('active');
   const [currentPage, setCurrentPage] = useState(1);
 
 
@@ -230,18 +232,44 @@ export default function App() {
   // For this 'EXECUTION' phase, we will focus on Auth. AdminPanel users list would need
   // a separate fetching mechanism from Supabase.
 
+  // Compute counts for tabs
+  const { activeCount, finalizedCount } = useMemo(() => {
+    let active = 0;
+    let finalized = 0;
+    deliveries.forEach(d => {
+      const status = d.adminStatus || AdminStatus.OPEN;
+      if ([AdminStatus.FULFILLED, AdminStatus.UNFULFILLED, AdminStatus.CANCELED].includes(status)) {
+        finalized++;
+      } else {
+        active++;
+      }
+    });
+    return { activeCount: active, finalizedCount: finalized };
+  }, [deliveries]);
+
   const filteredDeliveries = useMemo(() => {
     return deliveries.filter(item => {
       const matchInvoice = item.invoiceNumber.toLowerCase().includes(filters.invoiceNumber.toLowerCase());
       const matchStatus = filters.status ? item.status === filters.status : true;
-      const matchAdminStatus = filters.adminStatus ? item.adminStatus === filters.adminStatus : true;
+      // Removed adminStatus filter conflict
       const matchStart = filters.startDate ? item.issueDate >= filters.startDate : true;
       const matchEnd = filters.endDate ? item.issueDate <= filters.endDate : true;
+
 
       // Sanity check: exclude rows that look like headers
       const isHeaderRow = ['nota fiscal', 'nf', 'invoice', 'emissão', 'status'].includes(item.invoiceNumber.toLowerCase());
 
-      return matchInvoice && matchStatus && matchStart && matchEnd && matchAdminStatus && !isHeaderRow;
+      // Filter by View Mode (Active vs Finalized)
+      const currentAdminStatus = item.adminStatus || AdminStatus.OPEN;
+      const isFinalized = [AdminStatus.FULFILLED, AdminStatus.UNFULFILLED, AdminStatus.CANCELED].includes(currentAdminStatus);
+
+      if (deliveryView === 'active') {
+        if (isFinalized) return false;
+      } else {
+        if (!isFinalized) return false;
+      }
+
+      return matchInvoice && matchStatus && matchStart && matchEnd && !isHeaderRow;
     }).sort((a, b) => {
       // 1. Sort by Date Descending
       if (a.issueDate > b.issueDate) return -1;
@@ -249,7 +277,7 @@ export default function App() {
       // 2. Sort by Invoice Number Descending
       return b.invoiceNumber.localeCompare(a.invoiceNumber, undefined, { numeric: true });
     });
-  }, [deliveries, filters]);
+  }, [deliveries, filters, deliveryView]);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredDeliveries.length / ITEMS_PER_PAGE);
@@ -752,6 +780,33 @@ export default function App() {
 
               {activeTab === 'deliveries' && (
                 <div className="animate-in fade-in duration-300">
+
+                  {/* Tabs for Active/Finalized */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="bg-slate-100 p-1 rounded-lg inline-flex">
+                      <button
+                        onClick={() => setDeliveryView('active')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${deliveryView === 'active'
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                      >
+                        <Inbox size={16} />
+                        Em Aberto
+                      </button>
+                      <button
+                        onClick={() => setDeliveryView('finalized')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${deliveryView === 'finalized'
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                      >
+                        <Archive size={16} />
+                        Finalizadas
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       <div className="relative md:col-span-1">
@@ -762,10 +817,7 @@ export default function App() {
                         <option value="">Status Entrega</option>
                         {Object.values(DeliveryStatus).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
-                      <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={filters.adminStatus} onChange={(e) => setFilters(prev => ({ ...prev, adminStatus: e.target.value }))}>
-                        <option value="">Status Admin</option>
-                        {Object.values(AdminStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
+                      {/* AdminStatus Filter removed to avoid conflict with tabs */}
                       <div className="flex gap-2 md:col-span-2">
                         <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" title="Início Emissão" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))} />
                         <input type="date" className="w-1/2 px-2 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" title="Fim Emissão" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))} />

@@ -238,10 +238,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ deliveries, commer
                             </thead>
                             <tbody>
                                 {deliveries
-                                    .filter(d => {
-                                        const s = d.status.toLowerCase();
-                                        return s !== 'entregue' && s !== 'devolvido totalmente';
-                                    })
+                                    .filter(d => d.status === DeliveryStatus.PENDING)
                                     .sort((a, b) => new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime())
                                     .slice(0, 10)
                                     .map(d => (

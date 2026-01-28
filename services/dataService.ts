@@ -12,7 +12,7 @@ const mapDeliveryToApp = (data: any): DeliveryItem => ({
     status: data.status,
     receiverName: data.receiver_name,
     observations: data.observations,
-    adminStatus: data.admin_status,
+    adminStatus: data.admin_status || 'Aberto',
     company_id: data.company_id
 });
 
